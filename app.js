@@ -221,10 +221,38 @@ function render(session) {
     }
 }
 
+// Проверяем профиль: забанен ли человек и админ ли он
+async function applySession(session) {
+    if (!session) {
+        $("navAdmin").hidden = true;
+        return;
+    }
+
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, banned, ban_reason")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+    if (profile?.banned) {
+        await supabase.auth.signOut();
+        openModal("login");
+        setMsg(
+            $("loginMsg"),
+            "Аккаунт заблокирован. Причина: " + (profile.ban_reason || "не указана")
+        );
+        return;
+    }
+
+    $("navAdmin").hidden = profile?.role !== "admin";
+}
+
 supabase.auth.onAuthStateChange((event, session) => {
     render(session);
     // Человек пришёл по ссылке из письма «Сброс пароля»
     if (event === "PASSWORD_RECOVERY") openModal("newpass");
+    // Запросы к Supabase делаем не внутри колбэка, а чуть позже
+    setTimeout(() => applySession(session), 0);
 });
 supabase.auth.getSession().then(({ data }) => render(data.session));
 
