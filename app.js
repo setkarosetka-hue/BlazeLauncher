@@ -10,17 +10,25 @@ const $ = (id) => document.getElementById(id);
 /* ---------- Модальное окно ---------- */
 const modal = $("authModal");
 const tabs = { login: $("tabLogin"), register: $("tabRegister") };
-const forms = { login: $("loginForm"), register: $("registerForm") };
+const forms = {
+    login: $("loginForm"),
+    register: $("registerForm"),
+    reset: $("resetForm"),
+    newpass: $("newPassForm"),
+};
 
 function showTab(name) {
     Object.keys(tabs).forEach((key) => {
         const active = key === name;
         tabs[key].classList.toggle("active", active);
         tabs[key].setAttribute("aria-selected", active);
-        forms[key].hidden = !active;
     });
-    $("loginMsg").textContent = "";
-    $("registerMsg").textContent = "";
+    Object.keys(forms).forEach((key) => {
+        forms[key].hidden = key !== name;
+    });
+    // Вкладки «Вход / Регистрация» не нужны на экранах сброса пароля
+    $("modalTabs").hidden = name === "reset" || name === "newpass";
+    ["loginMsg", "registerMsg", "resetMsg", "newPassMsg"].forEach((id) => setMsg($(id), ""));
 }
 
 function openModal(tab = "login") {
@@ -65,6 +73,10 @@ function translateError(error) {
     if (m.includes("invalid login")) return "Неверная почта или пароль";
     if (m.includes("email not confirmed")) return "Сначала подтверди почту — проверь письмо";
     if (m.includes("rate limit")) return "Слишком много попыток. Попробуй чуть позже";
+    if (m.includes("different from the old") || m.includes("same password"))
+        return "Новый пароль должен отличаться от старого";
+    if (m.includes("session missing") || m.includes("expired") || m.includes("invalid token"))
+        return "Ссылка устарела. Запроси сброс пароля ещё раз";
     if (m.includes("password")) return "Пароль слишком простой (минимум 8 символов)";
     return "Не получилось: " + error.message;
 }
@@ -133,6 +145,64 @@ forms.login.addEventListener("submit", async (e) => {
     closeModal();
 });
 
+/* ---------- Сброс пароля ---------- */
+$("forgotLink").addEventListener("click", () => {
+    const email = $("logEmail").value.trim();
+    showTab("reset");
+    if (email) $("resetEmail").value = email;
+    $("resetEmail").focus();
+});
+
+$("backToLogin").addEventListener("click", () => showTab("login"));
+
+// Шаг 1: отправляем письмо со ссылкой
+forms.reset.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("resetMsg");
+    const btn = forms.reset.querySelector("button[type=submit]");
+    btn.disabled = true;
+    setMsg(msg, "Отправляем…");
+
+    const { error } = await supabase.auth.resetPasswordForEmail(
+        $("resetEmail").value.trim(),
+        { redirectTo: window.location.origin + window.location.pathname }
+    );
+
+    btn.disabled = false;
+
+    if (error) return setMsg(msg, translateError(error));
+    setMsg(msg, "Если такой аккаунт есть, мы отправили письмо со ссылкой. Проверь почту и папку «Спам».", true);
+});
+
+// Шаг 2: человек перешёл по ссылке из письма и задаёт новый пароль
+forms.newpass.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("newPassMsg");
+    const pass = $("newPass").value;
+
+    if (pass.length < 8) {
+        return setMsg(msg, "Пароль должен быть не короче 8 символов");
+    }
+    if (pass !== $("newPass2").value) {
+        return setMsg(msg, "Пароли не совпадают");
+    }
+
+    const btn = forms.newpass.querySelector("button[type=submit]");
+    btn.disabled = true;
+    setMsg(msg, "Сохраняем…");
+
+    const { error } = await supabase.auth.updateUser({ password: pass });
+
+    btn.disabled = false;
+
+    if (error) return setMsg(msg, translateError(error));
+
+    forms.newpass.reset();
+    setMsg(msg, "Пароль изменён!", true);
+    history.replaceState(null, "", window.location.pathname); // убираем токен из адреса
+    setTimeout(closeModal, 1200);
+});
+
 /* ---------- Состояние: вошёл / не вошёл ---------- */
 let currentSession = null;
 
@@ -151,7 +221,11 @@ function render(session) {
     }
 }
 
-supabase.auth.onAuthStateChange((_event, session) => render(session));
+supabase.auth.onAuthStateChange((event, session) => {
+    render(session);
+    // Человек пришёл по ссылке из письма «Сброс пароля»
+    if (event === "PASSWORD_RECOVERY") openModal("newpass");
+});
 supabase.auth.getSession().then(({ data }) => render(data.session));
 
 /* ---------- Скачивание ---------- */
