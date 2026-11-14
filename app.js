@@ -1,10 +1,5 @@
 import { supabase } from "./supabase.js";
 
-// Ссылка на скачивание. Когда выложишь релиз на GitHub — вставь сюда, например:
-// "https://github.com/setkarosetka-hue/BlazeLauncher/releases/latest"
-// Пока пусто — покажется сообщение «в разработке».
-const DOWNLOAD_URL = "";
-
 const $ = (id) => document.getElementById(id);
 
 /* ---------- Модальное окно ---------- */
@@ -256,19 +251,106 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 supabase.auth.getSession().then(({ data }) => render(data.session));
 
-/* ---------- Скачивание ---------- */
-$("downloadBtn").addEventListener("click", () => {
+/* ---------- Релизы и скачивание ---------- */
+const PLATFORM_NAMES = { android: "Android", windows: "Windows" };
+const PLATFORM_ELEMENTS = {
+    android: ["dlAndroid", "metaAndroid"],
+    windows: ["dlWindows", "metaWindows"],
+};
+const latest = { android: null, windows: null }; // последний опубликованный релиз
+
+function formatSize(bytes) {
+    return bytes ? (bytes / 1024 / 1024).toFixed(1) + " МБ" : "";
+}
+
+function renderReleases() {
+    let any = false;
+    const notes = $("releaseNotes");
+    notes.replaceChildren();
+
+    Object.keys(latest).forEach((platform) => {
+        const r = latest[platform];
+        const [btnId, metaId] = PLATFORM_ELEMENTS[platform];
+        const btn = $(btnId);
+        const meta = $(metaId);
+
+        if (!r) {
+            btn.disabled = true;
+            meta.textContent = "Скоро";
+            return;
+        }
+
+        any = true;
+        btn.disabled = false;
+        const parts = ["Версия " + r.version];
+        const size = formatSize(r.file_size);
+        if (size) parts.push(size);
+        parts.push(new Date(r.created_at).toLocaleDateString("ru-RU"));
+        meta.textContent = parts.join(" · ");
+
+        if (r.changelog) {
+            const box = document.createElement("div");
+            const title = document.createElement("strong");
+            title.textContent = `Что нового в ${PLATFORM_NAMES[platform]} ${r.version}`;
+            const text = document.createElement("p");
+            text.textContent = r.changelog;
+            box.append(title, text);
+            notes.append(box);
+        }
+    });
+
+    if (any) {
+        $("downloadStatus").textContent = "✅ Доступно для скачивания";
+        $("downloadText").textContent = "Выбери версию для своего устройства.";
+    }
+}
+
+async function loadReleases() {
+    const { data, error } = await supabase
+        .from("releases")
+        .select("id, platform, version, changelog, file_path, external_url, file_size, created_at")
+        .eq("published", true)
+        .order("created_at", { ascending: false });
+
+    if (error || !data) return;
+
+    data.forEach((r) => {
+        if (r.platform in latest && !latest[r.platform]) latest[r.platform] = r;
+    });
+    renderReleases();
+}
+
+async function download(platform) {
+    const r = latest[platform];
+    if (!r) return;
+
     if (!currentSession) {
         openModal("login");
         return;
     }
-    if (DOWNLOAD_URL) {
-        window.open(DOWNLOAD_URL, "_blank", "noopener");
-    } else {
-        $("downloadHint").textContent =
-            "BlazeLauncher ещё в разработке — скачивание скоро появится.";
+
+    const hint = $("downloadHint");
+
+    if (r.file_path) {
+        hint.textContent = "Готовим ссылку…";
+        const { data, error } = await supabase.storage
+            .from("releases")
+            .createSignedUrl(r.file_path, 120, { download: true });
+
+        if (error || !data) {
+            hint.textContent = "Не удалось начать скачивание. Попробуй ещё раз позже.";
+            return;
+        }
+        hint.textContent = "Скачивание началось…";
+        window.location.href = data.signedUrl;
+    } else if (r.external_url) {
+        window.open(r.external_url, "_blank", "noopener");
     }
-});
+}
+
+$("dlAndroid").addEventListener("click", () => download("android"));
+$("dlWindows").addEventListener("click", () => download("windows"));
+loadReleases();
 
 /* ---------- Новости из Supabase ---------- */
 async function loadNews() {
