@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -50,6 +49,10 @@
             cursor: pointer;
         }
 
+        [hidden] {
+            display: none !important;
+        }
+
         .navbar {
             height: 76px;
             display: flex;
@@ -92,6 +95,41 @@
             padding: 11px 20px;
             border-radius: 10px;
             font-weight: 800;
+        }
+
+        .nav-links a.nav-button:hover {
+            color: #111;
+        }
+
+        .nav-auth {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-ghost {
+            background: transparent;
+            color: #fff;
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.25s;
+        }
+
+        .nav-ghost:hover {
+            border-color: var(--orange);
+            color: var(--yellow);
+        }
+
+        .nav-user-name {
+            color: var(--yellow);
+            font-weight: 700;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .hero {
@@ -178,6 +216,12 @@
         .btn-primary:hover {
             transform: translateY(-3px);
             box-shadow: 0 0 35px rgba(255,117,24,0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: wait;
+            transform: none;
         }
 
         .btn-secondary {
@@ -304,6 +348,12 @@
             line-height: 1.8;
         }
 
+        .download-box .download-hint {
+            margin: 20px 0 0;
+            font-size: 14px;
+            color: var(--yellow);
+        }
+
         .status {
             display: inline-block;
             color: var(--yellow);
@@ -369,6 +419,130 @@
             color: var(--yellow);
         }
 
+        /* ---------- Окно входа / регистрации ---------- */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-box {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            max-height: 100%;
+            overflow-y: auto;
+            padding: 32px 28px 28px;
+            border-radius: 22px;
+            border: 1px solid #49301c;
+            background:
+                radial-gradient(circle at top, #28170c, transparent 65%),
+                var(--surface);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: #fff;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            border-color: var(--orange);
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 5px;
+            margin: 6px 40px 24px 0;
+            border-radius: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+
+        .modal-tab {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .modal-tab.active {
+            background: linear-gradient(135deg, var(--orange), var(--yellow));
+            color: #111;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #bdbdbd;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: #fff;
+            font-family: inherit;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .field input:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(255, 117, 24, 0.15);
+        }
+
+        .field small {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .form-msg {
+            min-height: 20px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #ff6b6b;
+        }
+
+        .form-msg.ok {
+            color: #7ddc8a;
+        }
+
+        .auth-form .btn {
+            width: 100%;
+        }
+
         @media (max-width: 900px) {
             .feature-grid,
             .news-grid {
@@ -401,6 +575,15 @@
 
             .nav-button {
                 padding: 9px 12px;
+            }
+
+            .nav-ghost {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .nav-user-name {
+                max-width: 70px;
             }
 
             .hero {
@@ -447,9 +630,18 @@
     <a href="#" class="logo">🔥 Blaze<span>Launcher</span></a>
 
     <nav class="nav-links">
-        <a href="#features">Возможности</a>
+        <a href="#features" class="hide-mobile">Возможности</a>
         <a href="#news" class="hide-mobile">Новости</a>
         <a href="#download" class="nav-button">Скачать</a>
+
+        <div class="nav-auth">
+            <button type="button" class="nav-ghost" id="navLogin">Войти</button>
+
+            <div class="nav-auth" id="navUser" hidden>
+                <span class="nav-user-name" id="navUserName"></span>
+                <button type="button" class="nav-ghost" id="navLogout">Выйти</button>
+            </div>
+        </div>
     </nav>
 </header>
 
@@ -562,9 +754,11 @@
                 Скоро здесь появится возможность скачать приложение.
             </p>
 
-            <button class="btn btn-primary" onclick="showDownloadMessage()">
+            <button type="button" class="btn btn-primary" id="downloadBtn">
                 ⬇ Скачать лаунчер
             </button>
+
+            <p class="download-hint" id="downloadHint"></p>
 
         </div>
     </section>
@@ -576,7 +770,7 @@
             <p>Следи за развитием BlazeLauncher.</p>
         </div>
 
-        <div class="news-grid">
+        <div class="news-grid" id="newsGrid">
 
             <div class="news-card">
                 <div class="date">14.11.2026</div>
@@ -617,7 +811,58 @@
     </div>
 </footer>
 
-<script src="script.js"></script>
+<!-- Окно входа и регистрации -->
+<div class="modal" id="authModal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Вход и регистрация">
+
+        <button type="button" class="modal-close" id="modalClose" aria-label="Закрыть">✕</button>
+
+        <div class="modal-tabs" role="tablist">
+            <button type="button" class="modal-tab active" id="tabLogin" role="tab" aria-selected="true">Вход</button>
+            <button type="button" class="modal-tab" id="tabRegister" role="tab" aria-selected="false">Регистрация</button>
+        </div>
+
+        <form class="auth-form" id="loginForm">
+            <div class="field">
+                <label for="logEmail">Почта</label>
+                <input id="logEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+            <div class="field">
+                <label for="logPass">Пароль</label>
+                <input id="logPass" type="password" autocomplete="current-password" required>
+            </div>
+            <p class="form-msg" id="loginMsg" role="status"></p>
+            <button type="submit" class="btn btn-primary">Войти</button>
+        </form>
+
+        <form class="auth-form" id="registerForm" hidden>
+            <div class="field">
+                <label for="regName">Ник в Minecraft</label>
+                <input id="regName" type="text" autocomplete="username" placeholder="Steve_2026"
+                       minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" required>
+                <small>3–16 символов: латиница, цифры и _</small>
+            </div>
+            <div class="field">
+                <label for="regEmail">Почта</label>
+                <input id="regEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+            <div class="field">
+                <label for="regPass">Пароль</label>
+                <input id="regPass" type="password" autocomplete="new-password" minlength="8" required>
+                <small>Минимум 8 символов</small>
+            </div>
+            <div class="field">
+                <label for="regPass2">Повтори пароль</label>
+                <input id="regPass2" type="password" autocomplete="new-password" minlength="8" required>
+            </div>
+            <p class="form-msg" id="registerMsg" role="status"></p>
+            <button type="submit" class="btn btn-primary">Создать аккаунт</button>
+        </form>
+
+    </div>
+</div>
+
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
