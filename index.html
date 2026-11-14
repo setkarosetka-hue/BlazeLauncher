@@ -362,6 +362,61 @@
             color: var(--yellow);
         }
 
+        .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .download-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-item .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .dl-meta {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .release-notes {
+            display: grid;
+            gap: 14px;
+            margin-top: 28px;
+            text-align: left;
+        }
+
+        .release-notes div {
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .release-notes strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--yellow);
+        }
+
+        .release-notes p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--muted);
+            white-space: pre-line;
+        }
+
         .status {
             display: inline-block;
             color: var(--yellow);
@@ -778,20 +833,29 @@
 
         <div class="download-box">
 
-            <div class="status">🚧 В разработке</div>
+            <div class="status" id="downloadStatus">🚧 В разработке</div>
 
             <h2>Готов разжечь пламя?</h2>
 
-            <p>
+            <p id="downloadText">
                 BlazeLauncher пока находится в разработке.<br>
                 Скоро здесь появится возможность скачать приложение.
             </p>
 
-            <button type="button" class="btn btn-primary" id="downloadBtn">
-                ⬇ Скачать лаунчер
-            </button>
+            <div class="download-buttons">
+                <div class="download-item">
+                    <button type="button" class="btn btn-primary" id="dlAndroid" disabled>🤖 Скачать для Android</button>
+                    <span class="dl-meta" id="metaAndroid">Скоро</span>
+                </div>
+                <div class="download-item">
+                    <button type="button" class="btn btn-primary" id="dlWindows" disabled>🖥️ Скачать для Windows</button>
+                    <span class="dl-meta" id="metaWindows">Скоро</span>
+                </div>
+            </div>
 
             <p class="download-hint" id="downloadHint"></p>
+
+            <div class="release-notes" id="releaseNotes"></div>
 
         </div>
     </section>
