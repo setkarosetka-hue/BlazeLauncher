@@ -269,4 +269,245 @@ $("search").addEventListener("input", render);
 $("filter").addEventListener("change", render);
 $("refreshBtn").addEventListener("click", loadUsers);
 
+/* ---------- Вкладки ---------- */
+let releasesLoaded = false;
+
+function showSection(name) {
+    const isUsers = name === "users";
+    $("usersSection").hidden = !isUsers;
+    $("releasesSection").hidden = isUsers;
+    $("tabUsers").classList.toggle("active", isUsers);
+    $("tabReleases").classList.toggle("active", !isUsers);
+
+    if (!isUsers && !releasesLoaded) {
+        releasesLoaded = true;
+        loadReleases();
+    }
+}
+
+$("tabUsers").addEventListener("click", () => showSection("users"));
+$("tabReleases").addEventListener("click", () => showSection("releases"));
+
+/* ---------- Релизы ---------- */
+const PLATFORMS = { android: "Android", windows: "Windows" };
+const EXTENSIONS = { android: [".apk"], windows: [".exe", ".zip", ".msi"] };
+let releases = [];
+
+function relStatus(text, ok = false) {
+    const el = $("relStatus");
+    el.textContent = text;
+    el.classList.toggle("ok", ok);
+}
+
+function uploadErrText(error) {
+    const m = (error?.message || "").toLowerCase();
+    if (m.includes("maximum") || m.includes("too large") || m.includes("413") || m.includes("size")) {
+        return "Файл больше лимита Supabase (на бесплатном плане 50 МБ). Загрузи его на GitHub Releases и вставь ссылку.";
+    }
+    if (m.includes("already exists") || m.includes("duplicate")) {
+        return "Файл для этой платформы и версии уже загружен. Измени версию или удали старый релиз.";
+    }
+    if (m.includes("bucket not found")) {
+        return "В Supabase нет хранилища releases. Выполни SQL из инструкции.";
+    }
+    if (m.includes("row-level security") || m.includes("unauthorized")) {
+        return "Нет прав на загрузку. Проверь SQL-правила хранилища.";
+    }
+    return errText(error);
+}
+
+function formatSize(bytes) {
+    return bytes ? (bytes / 1024 / 1024).toFixed(1) + " МБ" : "";
+}
+
+function setAccept() {
+    $("relFile").accept = EXTENSIONS[$("relPlatform").value].join(",");
+}
+$("relPlatform").addEventListener("change", () => {
+    $("relFile").value = "";
+    setAccept();
+});
+setAccept();
+
+async function loadReleases() {
+    const { data, error } = await supabase
+        .from("releases")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if (error) return relStatus(errText(error));
+
+    releases = data || [];
+    renderReleases();
+}
+
+function renderReleases() {
+    const tbody = $("relRows");
+    tbody.replaceChildren();
+
+    if (releases.length === 0) {
+        const tr = document.createElement("tr");
+        const cell = td("Релизов пока нет", "empty");
+        cell.colSpan = 6;
+        tr.append(cell);
+        tbody.append(tr);
+        return;
+    }
+
+    releases.forEach((r) => {
+        const tr = document.createElement("tr");
+
+        tr.append(td(PLATFORMS[r.platform] || r.platform, "name"));
+
+        const versionCell = document.createElement("td");
+        const v = document.createElement("span");
+        v.className = "name";
+        v.textContent = r.version;
+        versionCell.append(v);
+        if (r.changelog) {
+            const note = document.createElement("div");
+            note.className = "note";
+            note.textContent = r.changelog.length > 90 ? r.changelog.slice(0, 90) + "…" : r.changelog;
+            versionCell.append(note);
+        }
+        tr.append(versionCell);
+
+        const fileText = r.file_path
+            ? "Файл" + (r.file_size ? " · " + formatSize(r.file_size) : "")
+            : "Ссылка";
+        tr.append(td(fileText, "muted"));
+
+        tr.append(
+            td(
+                new Date(r.created_at).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" }),
+                "muted"
+            )
+        );
+
+        const statusCell = document.createElement("td");
+        statusCell.append(
+            r.published ? badge("Опубликован", "ok", true) : badge("Скрыт", "banned", true)
+        );
+        tr.append(statusCell);
+
+        const actions = document.createElement("td");
+        actions.append(actionButton("Скачать", () => downloadRelease(r)));
+        actions.append(
+            actionButton(r.published ? "Скрыть" : "Показать", () => togglePublished(r))
+        );
+        actions.append(actionButton("Удалить", () => deleteRelease(r), true));
+        tr.append(actions);
+
+        tbody.append(tr);
+    });
+}
+
+async function downloadRelease(r) {
+    if (r.file_path) {
+        const { data, error } = await supabase.storage
+            .from("releases")
+            .createSignedUrl(r.file_path, 120, { download: true });
+        if (error || !data) return relStatus(uploadErrText(error));
+        window.location.href = data.signedUrl;
+    } else if (r.external_url) {
+        window.open(r.external_url, "_blank", "noopener");
+    }
+}
+
+async function togglePublished(r) {
+    const { error } = await supabase
+        .from("releases")
+        .update({ published: !r.published })
+        .eq("id", r.id);
+
+    if (error) return relStatus(errText(error));
+    await loadReleases();
+    relStatus(r.published ? "Релиз скрыт с сайта" : "Релиз снова виден на сайте", true);
+}
+
+async function deleteRelease(r) {
+    const label = `${PLATFORMS[r.platform] || r.platform} ${r.version}`;
+    if (!window.confirm(`Удалить релиз ${label}? Файл тоже будет удалён, это нельзя отменить.`)) return;
+
+    if (r.file_path) {
+        const { error: removeError } = await supabase.storage.from("releases").remove([r.file_path]);
+        if (removeError) return relStatus(uploadErrText(removeError));
+    }
+
+    const { error } = await supabase.from("releases").delete().eq("id", r.id);
+    if (error) return relStatus(errText(error));
+
+    await loadReleases();
+    relStatus(`Релиз ${label} удалён`, true);
+}
+
+$("releaseForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (busy) return;
+
+    const platform = $("relPlatform").value;
+    const version = $("relVersion").value.trim();
+    const notes = $("relNotes").value.trim();
+    const file = $("relFile").files[0];
+    const url = $("relUrl").value.trim();
+
+    if (!version) return relStatus("Укажи версию");
+    if (!file && !url) return relStatus("Выбери файл или вставь ссылку");
+    if (!file && !/^https:\/\//i.test(url)) return relStatus("Ссылка должна начинаться с https://");
+
+    if (file) {
+        const ext = "." + file.name.split(".").pop().toLowerCase();
+        if (!EXTENSIONS[platform].includes(ext)) {
+            return relStatus(`Для ${PLATFORMS[platform]} нужен файл ${EXTENSIONS[platform].join(", ")}`);
+        }
+    }
+
+    const btn = $("relSubmit");
+    busy = true;
+    btn.disabled = true;
+
+    let filePath = null;
+
+    if (file) {
+        const safeName = file.name.replace(/[^A-Za-z0-9._-]/g, "_");
+        const safeVersion = version.replace(/[^A-Za-z0-9._-]/g, "_");
+        filePath = `${platform}/${safeVersion}/${safeName}`;
+
+        relStatus("Загружаем файл… не закрывай страницу", true);
+        const { error } = await supabase.storage
+            .from("releases")
+            .upload(filePath, file, { upsert: false });
+
+        if (error) {
+            busy = false;
+            btn.disabled = false;
+            return relStatus(uploadErrText(error));
+        }
+    }
+
+    const { error: insertError } = await supabase.from("releases").insert({
+        platform,
+        version,
+        changelog: notes || null,
+        file_path: filePath,
+        external_url: file ? null : url,
+        file_size: file ? file.size : null,
+    });
+
+    if (insertError) {
+        // не оставляем в хранилище «осиротевший» файл
+        if (filePath) await supabase.storage.from("releases").remove([filePath]);
+        busy = false;
+        btn.disabled = false;
+        return relStatus(errText(insertError));
+    }
+
+    busy = false;
+    btn.disabled = false;
+    $("releaseForm").reset();
+    setAccept();
+    await loadReleases();
+    relStatus(`Релиз ${PLATFORMS[platform]} ${version} опубликован`, true);
+});
+
 init();
