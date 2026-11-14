@@ -127,6 +127,10 @@
             color: var(--yellow);
         }
 
+        a.nav-ghost {
+            display: inline-block;
+        }
+
         .nav-user-name {
             color: var(--yellow);
             font-weight: 700;
@@ -667,6 +671,7 @@
 
             <div class="nav-auth" id="navUser" hidden>
                 <span class="nav-user-name" id="navUserName"></span>
+                <a href="admin.html" class="nav-ghost" id="navAdmin" hidden>Админка</a>
                 <button type="button" class="nav-ghost" id="navLogout">Выйти</button>
             </div>
         </div>
