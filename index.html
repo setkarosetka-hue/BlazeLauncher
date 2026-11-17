@@ -284,6 +284,59 @@
             line-height: 1.7;
         }
 
+        /* ---------- Объявления ---------- */
+        section.announcements {
+            padding: 10px 7% 70px;
+        }
+
+        .announcements .section-title {
+            margin-bottom: 30px;
+        }
+
+        .ann-list {
+            display: grid;
+            gap: 14px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .ann-card {
+            padding: 20px 24px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .ann-card.update {
+            border-color: #49301c;
+        }
+
+        .ann-card.warning {
+            border-color: var(--orange);
+            background:
+                radial-gradient(circle at top left, #28170c, transparent 70%),
+                var(--surface);
+        }
+
+        .ann-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .ann-card p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #bdbdbd;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+
+        .ann-card .date {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--orange);
+        }
+
         .features {
             background: #0d0d0d;
         }
@@ -690,6 +743,10 @@
                 padding: 65px 5%;
             }
 
+            section.announcements {
+                padding: 10px 5% 50px;
+            }
+
             .feature-grid,
             .news-grid {
                 grid-template-columns: 1fr;
@@ -779,6 +836,15 @@
             </div>
 
         </div>
+    </section>
+
+    <!-- Объявления: скрыты, пока нет опубликованных (показывает announcements.js) -->
+    <section class="announcements" id="announcements" hidden>
+        <div class="section-title">
+            <h2>📢 <span>Объявления</span></h2>
+        </div>
+
+        <div class="ann-list" id="annList"></div>
     </section>
 
     <section class="features" id="features">
@@ -988,6 +1054,7 @@
 </div>
 
 <script type="module" src="app.js"></script>
+<script type="module" src="announcements.js"></script>
 
 </body>
 </html>
