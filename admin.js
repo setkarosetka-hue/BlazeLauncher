@@ -511,3 +511,46 @@ $("releaseForm").addEventListener("submit", async (e) => {
 });
 
 init();
+const byId = id => document.getElementById(id);
+const say = t => byId('mMsg').textContent = t;
+
+byId('openMaint').onclick = () => {
+  document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+  byId('tab-maint').style.display = 'block';
+  loadMaint();
+};
+
+async function loadMaint(){
+  const { data } = await supabase.from('site_settings').select('*').eq('id',1).maybeSingle();
+  if (!data) return;
+  byId('mReason').value = data.maintenance_reason || '';
+  byId('mAnnounce').value = data.announcement || '';
+  if (data.maintenance_until) {
+    const d = new Date(data.maintenance_until);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    byId('mUntil').value = d.toISOString().slice(0,16);
+  }
+}
+
+byId('mStart').onclick = async () => {
+  const u = byId('mUntil').value;
+  const { error } = await supabase.from('site_settings').update({
+    maintenance: true,
+    maintenance_reason: byId('mReason').value.trim() || null,
+    maintenance_until: u ? new Date(u).toISOString() : null,
+    announcement: byId('mAnnounce').value.trim() || null
+  }).eq('id',1);
+  say(error ? 'Ошибка: ' + error.message : 'Техработы включены');
+};
+
+byId('mStop').onclick = async () => {
+  const { error } = await supabase.from('site_settings')
+    .update({ maintenance: false }).eq('id',1);
+  say(error ? 'Ошибка: ' + error.message : 'Техработы выключены');
+};
+
+byId('mSaveAnn').onclick = async () => {
+  const { error } = await supabase.from('site_settings')
+    .update({ announcement: byId('mAnnounce').value.trim() || null }).eq('id',1);
+  say(error ? 'Ошибка: ' + error.message : 'Объявление сохранено');
+};
