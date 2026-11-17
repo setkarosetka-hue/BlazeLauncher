@@ -272,21 +272,31 @@ $("refreshBtn").addEventListener("click", loadUsers);
 /* ---------- Вкладки ---------- */
 let releasesLoaded = false;
 
-function showSection(name) {
-    const isUsers = name === "users";
-    $("usersSection").hidden = !isUsers;
-    $("releasesSection").hidden = isUsers;
-    $("tabUsers").classList.toggle("active", isUsers);
-    $("tabReleases").classList.toggle("active", !isUsers);
+const SECTIONS = {
+    users:    { tab: "tabUsers",    section: "usersSection" },
+    releases: { tab: "tabReleases", section: "releasesSection" },
+    maint:    { tab: "tabMaint",    section: "maintSection" },
+};
 
-    if (!isUsers && !releasesLoaded) {
+function showSection(name) {
+    Object.entries(SECTIONS).forEach(([key, ids]) => {
+        const active = key === name;
+        $(ids.section).hidden = !active;
+        $(ids.tab).classList.toggle("active", active);
+    });
+
+    if (name === "releases" && !releasesLoaded) {
         releasesLoaded = true;
         loadReleases();
+    }
+    if (name === "maint") {
+        loadMaint();
     }
 }
 
 $("tabUsers").addEventListener("click", () => showSection("users"));
 $("tabReleases").addEventListener("click", () => showSection("releases"));
+$("tabMaint").addEventListener("click", () => showSection("maint"));
 
 /* ---------- Релизы ---------- */
 const PLATFORMS = { android: "Android", windows: "Windows" };
@@ -510,47 +520,68 @@ $("releaseForm").addEventListener("submit", async (e) => {
     relStatus(`Релиз ${PLATFORMS[platform]} ${version} опубликован`, true);
 });
 
-init();
-const byId = id => document.getElementById(id);
-const say = t => byId('mMsg').textContent = t;
-
-byId('openMaint').onclick = () => {
-  document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
-  byId('tab-maint').style.display = 'block';
-  loadMaint();
-};
-
-async function loadMaint(){
-  const { data } = await supabase.from('site_settings').select('*').eq('id',1).maybeSingle();
-  if (!data) return;
-  byId('mReason').value = data.maintenance_reason || '';
-  byId('mAnnounce').value = data.announcement || '';
-  if (data.maintenance_until) {
-    const d = new Date(data.maintenance_until);
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    byId('mUntil').value = d.toISOString().slice(0,16);
-  }
+/* ---------- Технические работы ---------- */
+function maintMsg(text, ok = false) {
+    const el = $("mMsg");
+    el.textContent = text;
+    el.classList.toggle("ok", ok);
 }
 
-byId('mStart').onclick = async () => {
-  const u = byId('mUntil').value;
-  const { error } = await supabase.from('site_settings').update({
-    maintenance: true,
-    maintenance_reason: byId('mReason').value.trim() || null,
-    maintenance_until: u ? new Date(u).toISOString() : null,
-    announcement: byId('mAnnounce').value.trim() || null
-  }).eq('id',1);
-  say(error ? 'Ошибка: ' + error.message : 'Техработы включены');
-};
+async function loadMaint() {
+    const { data, error } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("id", 1)
+        .maybeSingle();
 
-byId('mStop').onclick = async () => {
-  const { error } = await supabase.from('site_settings')
-    .update({ maintenance: false }).eq('id',1);
-  say(error ? 'Ошибка: ' + error.message : 'Техработы выключены');
-};
+    if (error) return maintMsg("Ошибка: " + error.message);
+    if (!data) return;
 
-byId('mSaveAnn').onclick = async () => {
-  const { error } = await supabase.from('site_settings')
-    .update({ announcement: byId('mAnnounce').value.trim() || null }).eq('id',1);
-  say(error ? 'Ошибка: ' + error.message : 'Объявление сохранено');
-};
+    $("mReason").value = data.maintenance_reason || "";
+    $("mAnnounce").value = data.announcement || "";
+
+    if (data.maintenance_until) {
+        const d = new Date(data.maintenance_until);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        $("mUntil").value = d.toISOString().slice(0, 16);
+    } else {
+        $("mUntil").value = "";
+    }
+
+    const state = $("mState");
+    state.textContent = data.maintenance ? "Включены" : "Выключены";
+    state.className = "badge first " + (data.maintenance ? "banned" : "ok");
+}
+
+async function saveMaint(patch, okText) {
+    const { error } = await supabase.from("site_settings").update(patch).eq("id", 1);
+    if (error) return maintMsg("Ошибка: " + error.message);
+    maintMsg(okText, true);
+    loadMaint();
+}
+
+$("mStart").addEventListener("click", () => {
+    const until = $("mUntil").value;
+    saveMaint(
+        {
+            maintenance: true,
+            maintenance_reason: $("mReason").value.trim() || null,
+            maintenance_until: until ? new Date(until).toISOString() : null,
+            announcement: $("mAnnounce").value.trim() || null,
+        },
+        "Техработы включены"
+    );
+});
+
+$("mStop").addEventListener("click", () => {
+    saveMaint({ maintenance: false }, "Техработы выключены");
+});
+
+$("mSaveAnn").addEventListener("click", () => {
+    saveMaint(
+        { announcement: $("mAnnounce").value.trim() || null },
+        "Объявление сохранено"
+    );
+});
+
+init();
