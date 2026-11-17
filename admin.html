@@ -481,6 +481,19 @@
             color: var(--muted);
         }
 
+        .field .check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .field .check input {
+            width: auto;
+            accent-color: var(--orange);
+        }
+
         .rel-form .btn {
             align-self: flex-start;
         }
@@ -546,6 +559,7 @@
         <div class="tabs" role="tablist">
             <button type="button" class="tab active" id="tabUsers" role="tab">Пользователи</button>
             <button type="button" class="tab" id="tabReleases" role="tab">Релизы</button>
+            <button type="button" class="tab" id="tabAnn" role="tab">Объявления</button>
             <button type="button" class="tab" id="tabMaint" role="tab">Техработы</button>
         </div>
 
@@ -642,6 +656,60 @@
                         </tr>
                     </thead>
                     <tbody id="relRows"></tbody>
+                </table>
+            </div>
+
+        </section>
+
+        <section id="annSection" hidden>
+
+            <h2 class="sub">Новое объявление</h2>
+
+            <form class="rel-form" id="annForm">
+                <div class="row">
+                    <div class="field">
+                        <label for="annTitle">Заголовок</label>
+                        <input id="annTitle" type="text" maxlength="120" placeholder="Например: Вышла версия 0.1.0" required>
+                    </div>
+                    <div class="field">
+                        <label for="annKind">Тип</label>
+                        <select id="annKind">
+                            <option value="info">Обычное</option>
+                            <option value="update">Обновление</option>
+                            <option value="warning">Важное</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="annBody">Текст</label>
+                    <textarea id="annBody" maxlength="2000" placeholder="Что хочешь сообщить посетителям сайта" required></textarea>
+                </div>
+
+                <div class="field">
+                    <label class="check" for="annPinned">
+                        <input id="annPinned" type="checkbox">
+                        Закрепить сверху
+                    </label>
+                </div>
+
+                <p class="status-line" id="annMsg" role="status"></p>
+                <button type="submit" class="btn" id="annSubmit">Опубликовать объявление</button>
+            </form>
+
+            <h2 class="sub">Все объявления</h2>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Заголовок</th>
+                            <th>Тип</th>
+                            <th>Дата</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="annRows"></tbody>
                 </table>
             </div>
 
