@@ -57,6 +57,46 @@
             display: none !important;
         }
 
+        /* ---------- Первичная проверка сайта ---------- */
+        .boot-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            background: radial-gradient(circle at top, #28170c, #090909 70%);
+            color: #fff;
+            font-family: 'Onest', sans-serif;
+            text-align: center;
+        }
+
+        .boot-logo {
+            font-size: clamp(28px, 6vw, 42px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+        }
+
+        .boot-logo span { color: #ff7518; }
+
+        .boot-spinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid #49301c;
+            border-top-color: #ffb52e;
+            border-radius: 50%;
+            animation: boot-spin .8s linear infinite;
+        }
+
+        .boot-text {
+            color: #999;
+            font-size: 13px;
+        }
+
+        @keyframes boot-spin { to { transform: rotate(360deg); } }
+
         .navbar {
             height: 76px;
             display: flex;
@@ -769,6 +809,13 @@
 </head>
 
 <body>
+
+<!-- Экран не даст главной странице появиться до проверки технических работ -->
+<div class="boot-screen" id="bootScreen" role="status" aria-live="polite">
+    <div class="boot-logo">🔥 Blaze<span>Launcher</span></div>
+    <div class="boot-spinner" aria-hidden="true"></div>
+    <div class="boot-text">Проверяем состояние сайта...</div>
+</div>
 
 <header class="navbar">
     <a href="#" class="logo">🔥 Blaze<span>Launcher</span></a>
