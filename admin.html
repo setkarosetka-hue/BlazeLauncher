@@ -651,6 +651,17 @@
 </div>
 
 <script type="module" src="admin.js"></script>
+<button id="openMaint">Техработы</button>
 
+<section id="tab-maint" class="tab" style="display:none">
+  <h3>Технические работы</h3>
+  <label>Причина<input id="mReason" maxlength="200"></label>
+  <label>Закончатся (необязательно)<input id="mUntil" type="datetime-local"></label>
+  <label>Объявление<textarea id="mAnnounce"></textarea></label>
+  <button id="mStart">Запустить техработы</button>
+  <button id="mStop">Выключить</button>
+  <button id="mSaveAnn">Сохранить только объявление</button>
+  <p id="mMsg"></p>
+</section>
 </body>
 </html>
