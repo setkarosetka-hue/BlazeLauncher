@@ -99,6 +99,10 @@ function actionButton(label, onClick, danger = false) {
     return el;
 }
 
+function formatDate(value) {
+    return new Date(value).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" });
+}
+
 function userRow(u) {
     const tr = document.createElement("tr");
     const isMe = u.id === me;
@@ -115,12 +119,7 @@ function userRow(u) {
 
     // Почта и дата
     tr.append(td(u.email || "—", "muted"));
-    tr.append(
-        td(
-            new Date(u.created_at).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" }),
-            "muted"
-        )
-    );
+    tr.append(td(formatDate(u.created_at), "muted"));
 
     // Статус
     const statusCell = document.createElement("td");
@@ -275,6 +274,7 @@ let releasesLoaded = false;
 const SECTIONS = {
     users:    { tab: "tabUsers",    section: "usersSection" },
     releases: { tab: "tabReleases", section: "releasesSection" },
+    ann:      { tab: "tabAnn",      section: "annSection" },
     maint:    { tab: "tabMaint",    section: "maintSection" },
 };
 
@@ -289,6 +289,9 @@ function showSection(name) {
         releasesLoaded = true;
         loadReleases();
     }
+    if (name === "ann") {
+        loadAnn();
+    }
     if (name === "maint") {
         loadMaint();
     }
@@ -296,6 +299,7 @@ function showSection(name) {
 
 $("tabUsers").addEventListener("click", () => showSection("users"));
 $("tabReleases").addEventListener("click", () => showSection("releases"));
+$("tabAnn").addEventListener("click", () => showSection("ann"));
 $("tabMaint").addEventListener("click", () => showSection("maint"));
 
 /* ---------- Релизы ---------- */
@@ -387,12 +391,7 @@ function renderReleases() {
             : "Ссылка";
         tr.append(td(fileText, "muted"));
 
-        tr.append(
-            td(
-                new Date(r.created_at).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" }),
-                "muted"
-            )
-        );
+        tr.append(td(formatDate(r.created_at), "muted"));
 
         const statusCell = document.createElement("td");
         statusCell.append(
@@ -520,6 +519,134 @@ $("releaseForm").addEventListener("submit", async (e) => {
     relStatus(`Релиз ${PLATFORMS[platform]} ${version} опубликован`, true);
 });
 
+/* ---------- Объявления ---------- */
+const KINDS = { info: "Обычное", update: "Обновление", warning: "Важное" };
+let anns = [];
+
+function annMsg(text, ok = false) {
+    const el = $("annMsg");
+    el.textContent = text;
+    el.classList.toggle("ok", ok);
+}
+
+async function loadAnn() {
+    const { data, error } = await supabase
+        .from("announcements")
+        .select("*")
+        .order("pinned", { ascending: false })
+        .order("created_at", { ascending: false });
+
+    if (error) return annMsg(errText(error));
+
+    anns = data || [];
+    renderAnn();
+}
+
+function renderAnn() {
+    const tbody = $("annRows");
+    tbody.replaceChildren();
+
+    if (anns.length === 0) {
+        const tr = document.createElement("tr");
+        const cell = td("Объявлений пока нет", "empty");
+        cell.colSpan = 4;
+        tr.append(cell);
+        tbody.append(tr);
+        return;
+    }
+
+    anns.forEach((a) => {
+        const tr = document.createElement("tr");
+
+        const titleCell = document.createElement("td");
+        const t = document.createElement("span");
+        t.className = "name";
+        t.textContent = (a.pinned ? "📌 " : "") + a.title;
+        titleCell.append(t);
+
+        const note = document.createElement("div");
+        note.className = "note";
+        note.textContent = a.body.length > 90 ? a.body.slice(0, 90) + "…" : a.body;
+        titleCell.append(note);
+        tr.append(titleCell);
+
+        tr.append(td(KINDS[a.kind] || a.kind, "muted"));
+        tr.append(td(formatDate(a.created_at), "muted"));
+
+        const actions = document.createElement("td");
+        actions.append(
+            actionButton(a.pinned ? "Открепить" : "Закрепить", () => toggleAnnPin(a))
+        );
+        actions.append(actionButton("Удалить", () => deleteAnn(a), true));
+        tr.append(actions);
+
+        tbody.append(tr);
+    });
+}
+
+async function toggleAnnPin(a) {
+    const { data, error } = await supabase
+        .from("announcements")
+        .update({ pinned: !a.pinned })
+        .eq("id", a.id)
+        .select();
+
+    if (error) return annMsg(errText(error));
+    if (!data || data.length === 0) {
+        return annMsg("Не сохранилось: проверь права (RLS) для announcements");
+    }
+
+    await loadAnn();
+    annMsg(a.pinned ? "Объявление откреплено" : "Объявление закреплено", true);
+}
+
+async function deleteAnn(a) {
+    if (!window.confirm(`Удалить объявление «${a.title}»? Это нельзя отменить.`)) return;
+
+    const { data, error } = await supabase
+        .from("announcements")
+        .delete()
+        .eq("id", a.id)
+        .select();
+
+    if (error) return annMsg(errText(error));
+    if (!data || data.length === 0) {
+        return annMsg("Не удалилось: проверь права (RLS) для announcements");
+    }
+
+    await loadAnn();
+    annMsg("Объявление удалено", true);
+}
+
+$("annForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (busy) return;
+
+    const title = $("annTitle").value.trim();
+    const body = $("annBody").value.trim();
+    if (!title || !body) return annMsg("Заполни заголовок и текст");
+
+    const btn = $("annSubmit");
+    busy = true;
+    btn.disabled = true;
+
+    const { error } = await supabase.from("announcements").insert({
+        title,
+        body,
+        kind: $("annKind").value,
+        pinned: $("annPinned").checked,
+    });
+
+    busy = false;
+    btn.disabled = false;
+
+    if (error) return annMsg(errText(error));
+
+    $("annForm").reset();
+    await loadAnn();
+    annMsg("Объявление опубликовано", true);
+});
+
 /* ---------- Технические работы ---------- */
 function maintMsg(text, ok = false) {
     const el = $("mMsg");
@@ -535,7 +662,7 @@ async function loadMaint() {
         .maybeSingle();
 
     if (error) return maintMsg("Ошибка: " + error.message);
-    if (!data) return;
+    if (!data) return maintMsg("В таблице site_settings нет строки с id = 1");
 
     $("mReason").value = data.maintenance_reason || "";
     $("mAnnounce").value = data.announcement || "";
@@ -554,8 +681,19 @@ async function loadMaint() {
 }
 
 async function saveMaint(patch, okText) {
-    const { error } = await supabase.from("site_settings").update(patch).eq("id", 1);
+    const { data, error } = await supabase
+        .from("site_settings")
+        .update(patch)
+        .eq("id", 1)
+        .select();
+
     if (error) return maintMsg("Ошибка: " + error.message);
+
+    // Supabase не возвращает ошибку, если RLS не дал изменить строку, поэтому проверяем сами
+    if (!data || data.length === 0) {
+        return maintMsg("Не сохранилось: нет строки id = 1 в site_settings или нет прав (RLS). Выполни setup.sql");
+    }
+
     maintMsg(okText, true);
     loadMaint();
 }
