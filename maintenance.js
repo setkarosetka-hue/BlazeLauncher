@@ -80,6 +80,11 @@ function make(tag, cls, text) {
     return element;
 }
 
+function hideBootScreen() {
+    const boot = document.getElementById("bootScreen");
+    if (boot) boot.remove();
+}
+
 /* ---------- Баннер объявления ---------- */
 
 function showBanner(text) {
@@ -105,15 +110,11 @@ function showOverlay(settings, until) {
 
     if (settings.maintenance_reason) {
         box.append(
-            make(
-                "p",
-                "",
-                "Причина: " + settings.maintenance_reason
-            )
+            make("p", "", "Причина: " + settings.maintenance_reason)
         );
     }
 
-    if (until) {
+    if (until && !Number.isNaN(until.getTime())) {
         box.append(
             make(
                 "p",
@@ -128,12 +129,8 @@ function showOverlay(settings, until) {
     }
 
     if (settings.announcement) {
-        box.append(
-            make("p", "", settings.announcement)
-        );
+        box.append(make("p", "", settings.announcement));
     }
-
-    /* ---------- Вход администратора ---------- */
 
     const adminBtn = make(
         "button",
@@ -142,15 +139,12 @@ function showOverlay(settings, until) {
     );
 
     adminBtn.type = "button";
-
     adminBtn.addEventListener("click", () => {
         window.location.href = "./admin-login.html";
     });
 
     box.append(adminBtn);
-
     overlay.append(box);
-
     document.body.append(overlay);
     document.body.style.overflow = "hidden";
 }
@@ -161,27 +155,17 @@ async function isAdmin() {
     try {
         const { data, error } = await supabase.auth.getSession();
 
-        if (error || !data.session) {
-            return false;
-        }
-
-        const session = data.session;
+        if (error || !data.session) return false;
 
         const { data: profile, error: profileError } = await supabase
             .from("profiles")
             .select("role, banned")
-            .eq("id", session.user.id)
+            .eq("id", data.session.user.id)
             .maybeSingle();
 
-        if (profileError || !profile) {
-            return false;
-        }
+        if (profileError || !profile) return false;
 
-        return (
-            profile.role === "admin" &&
-            profile.banned !== true
-        );
-
+        return profile.role === "admin" && profile.banned !== true;
     } catch (error) {
         console.error("Ошибка проверки администратора:", error);
         return false;
@@ -201,10 +185,7 @@ async function run() {
             .maybeSingle();
 
         if (error || !data) {
-            console.warn(
-                "site_settings не прочитался:",
-                error?.message
-            );
+            console.warn("site_settings не прочитался:", error?.message);
             return;
         }
 
@@ -213,11 +194,10 @@ async function run() {
             : null;
 
         const active =
-            data.maintenance &&
-            (!until || until > new Date());
+            data.maintenance === true &&
+            (!until || (!Number.isNaN(until.getTime()) && until > new Date()));
 
         if (active) {
-
             const admin = await isAdmin();
 
             if (admin) {
@@ -227,18 +207,15 @@ async function run() {
             } else {
                 showOverlay(data, until);
             }
-
         } else if (data.announcement) {
-
             showBanner("📢 " + data.announcement);
-
         }
-
     } catch (error) {
-        console.error(
-            "Ошибка запуска maintenance.js:",
-            error
-        );
+        console.error("Ошибка запуска maintenance.js:", error);
+    } finally {
+        // Снимаем экран загрузки только после завершения проверки.
+        // При ошибке сети сайт всё равно станет доступен.
+        hideBootScreen();
     }
 }
 
