@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BlazeLauncher — Minecraft Java Launcher</title>
+    <meta name="description" content="BlazeLauncher — современный Minecraft Java Launcher для Android.">
+
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #090909;
+            --surface: #141414;
+            --surface2: #1c1c1c;
+            --orange: #ff7518;
+            --yellow: #ffb52e;
+            --text: #ffffff;
+            --muted: #999999;
+            --border: #292929;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Onest', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        /* ---------- Первичная проверка сайта ---------- */
+        .boot-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            background: radial-gradient(circle at top, #28170c, #090909 70%);
+            color: #fff;
+            font-family: 'Onest', sans-serif;
+            text-align: center;
+        }
+
+        .boot-logo {
+            font-size: clamp(28px, 6vw, 42px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+        }
+
+        .boot-logo span { color: #ff7518; }
+
+        .boot-spinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid #49301c;
+            border-top-color: #ffb52e;
+            border-radius: 50%;
+            animation: boot-spin .8s linear infinite;
+        }
+
+        .boot-text {
+            color: #999;
+            font-size: 13px;
+        }
+
+        @keyframes boot-spin { to { transform: rotate(360deg); } }
+
+        .navbar {
+            height: 76px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 7%;
+            border-bottom: 1px solid var(--border);
+            background: rgba(9, 9, 9, 0.9);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(15px);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            color: var(--orange);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            color: #bdbdbd;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            color: var(--yellow);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--orange), var(--yellow));
+            color: #111;
+            padding: 11px 20px;
+            border-radius: 10px;
+            font-weight: 800;
+        }
+
+        .nav-links a.nav-button:hover {
+            color: #111;
+        }
+
+        .nav-auth {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-ghost {
+            background: transparent;
+            color: #fff;
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.25s;
+        }
+
+        .nav-ghost:hover {
+            border-color: var(--orange);
+            color: var(--yellow);
+        }
+
+        a.nav-ghost {
+            display: inline-block;
+        }
+
+        .nav-user-name {
+            color: var(--yellow);
+            font-weight: 700;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .hero {
+            min-height: 650px;
+            padding: 100px 7%;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            right: -150px;
+            top: -50px;
+            background: radial-gradient(circle, rgba(255,117,24,0.18), transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 700px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tag {
+            display: inline-block;
+            border: 1px solid #49301c;
+            background: #1c120b;
+            color: var(--yellow);
+            padding: 9px 15px;
+            border-radius: 30px;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 7vw, 88px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -4px;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, var(--orange), var(--yellow));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            max-width: 520px;
+            font-size: 17px;
+            line-height: 1.8;
+            color: var(--muted);
+            margin-bottom: 35px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            transition: 0.25s;
+            border: none;
+        }
+
+        .btn-primary {
+            color: #111;
+            background: linear-gradient(135deg, var(--orange), var(--yellow));
+            box-shadow: 0 0 25px rgba(255,117,24,0.15);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 35px rgba(255,117,24,0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: wait;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: white;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--orange);
+        }
+
+        .hero-info {
+            display: flex;
+            gap: 35px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .hero-info strong {
+            display: block;
+            font-size: 20px;
+            color: var(--yellow);
+        }
+
+        .hero-info span {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        section {
+            padding: 90px 7%;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title h2 {
+            font-size: clamp(30px, 4vw, 45px);
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .section-title h2 span {
+            color: var(--orange);
+        }
+
+        .section-title p {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        /* ---------- Объявления ---------- */
+        section.announcements {
+            padding: 10px 7% 70px;
+        }
+
+        .announcements .section-title {
+            margin-bottom: 30px;
+        }
+
+        .ann-list {
+            display: grid;
+            gap: 14px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .ann-card {
+            padding: 20px 24px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .ann-card.update {
+            border-color: #49301c;
+        }
+
+        .ann-card.warning {
+            border-color: var(--orange);
+            background:
+                radial-gradient(circle at top left, #28170c, transparent 70%),
+                var(--surface);
+        }
+
+        .ann-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .ann-card p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #bdbdbd;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+
+        .ann-card .date {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--orange);
+        }
+
+        .features {
+            background: #0d0d0d;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 30px;
+            transition: 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #6a3515;
+        }
+
+        .feature-icon {
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #28170c;
+            border-radius: 15px;
+            font-size: 26px;
+            margin-bottom: 22px;
+        }
+
+        .feature-card h3 {
+            font-size: 19px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .download {
+            text-align: center;
+        }
+
+        .download-box {
+            max-width: 800px;
+            margin: auto;
+            padding: 50px 30px;
+            border-radius: 25px;
+            border: 1px solid #49301c;
+            background:
+                radial-gradient(circle at top, #28170c, transparent 70%),
+                var(--surface);
+        }
+
+        .download-box h2 {
+            font-size: 38px;
+            margin-bottom: 20px;
+        }
+
+        .download-box p {
+            color: var(--muted);
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .download-box .download-hint {
+            margin: 20px 0 0;
+            font-size: 14px;
+            color: var(--yellow);
+        }
+
+        .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .download-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-item .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .dl-meta {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .release-notes {
+            display: grid;
+            gap: 14px;
+            margin-top: 28px;
+            text-align: left;
+        }
+
+        .release-notes div {
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .release-notes strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--yellow);
+        }
+
+        .release-notes p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--muted);
+            white-space: pre-line;
+        }
+
+        .status {
+            display: inline-block;
+            color: var(--yellow);
+            background: #24180d;
+            border: 1px solid #49301c;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .news-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 18px;
+        }
+
+        .news-card .date {
+            color: var(--orange);
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .news-card h3 {
+            margin-bottom: 12px;
+        }
+
+        .news-card p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        footer {
+            padding: 35px 7%;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        footer strong {
+            color: var(--orange);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a:hover {
+            color: var(--yellow);
+        }
+
+        /* ---------- Окно входа / регистрации ---------- */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-box {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            max-height: 100%;
+            overflow-y: auto;
+            padding: 32px 28px 28px;
+            border-radius: 22px;
+            border: 1px solid #49301c;
+            background:
+                radial-gradient(circle at top, #28170c, transparent 65%),
+                var(--surface);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: #fff;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            border-color: var(--orange);
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 5px;
+            margin: 6px 40px 24px 0;
+            border-radius: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+
+        .modal-tab {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .modal-tab.active {
+            background: linear-gradient(135deg, var(--orange), var(--yellow));
+            color: #111;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #bdbdbd;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: #fff;
+            font-family: inherit;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .field input:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(255, 117, 24, 0.15);
+        }
+
+        .field small {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .form-msg {
+            min-height: 20px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #ff6b6b;
+        }
+
+        .form-msg.ok {
+            color: #7ddc8a;
+        }
+
+        .auth-form .btn {
+            width: 100%;
+        }
+
+        .link-btn {
+            align-self: center;
+            padding: 4px;
+            border: none;
+            background: none;
+            color: var(--yellow);
+            font-size: 13px;
+        }
+
+        .link-btn:hover {
+            text-decoration: underline;
+        }
+
+        .form-hint {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #bdbdbd;
+        }
+
+        .form-title {
+            font-size: 20px;
+            margin: 4px 40px 2px 0;
+        }
+
+        @media (max-width: 900px) {
+            .feature-grid,
+            .news-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero {
+                min-height: 550px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 0 5%;
+                height: 65px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .nav-links {
+                gap: 12px;
+                font-size: 12px;
+            }
+
+            .nav-links .hide-mobile {
+                display: none;
+            }
+
+            .nav-button {
+                padding: 9px 12px;
+            }
+
+            .nav-ghost {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .nav-user-name {
+                max-width: 70px;
+            }
+
+            .hero {
+                padding: 75px 5%;
+                min-height: auto;
+            }
+
+            .hero h1 {
+                letter-spacing: -2px;
+            }
+
+            .hero p {
+                font-size: 15px;
+            }
+
+            section {
+                padding: 65px 5%;
+            }
+
+            section.announcements {
+                padding: 10px 5% 50px;
+            }
+
+            .feature-grid,
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-card {
+                padding: 25px;
+            }
+
+            .download-box h2 {
+                font-size: 29px;
+            }
+
+            footer {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Экран не даст главной странице появиться до проверки технических работ -->
+<div class="boot-screen" id="bootScreen" role="status" aria-live="polite">
+    <div class="boot-logo">🔥 Blaze<span>Launcher</span></div>
+    <div class="boot-spinner" aria-hidden="true"></div>
+    <div class="boot-text">Проверяем состояние сайта...</div>
+</div>
+
+<header class="navbar">
+    <a href="#" class="logo">🔥 Blaze<span>Launcher</span></a>
+
+    <nav class="nav-links">
+        <a href="#features" class="hide-mobile">Возможности</a>
+        <a href="#news" class="hide-mobile">Новости</a>
+        <a href="#download" class="nav-button">Скачать</a>
+
+        <div class="nav-auth">
+            <button type="button" class="nav-ghost" id="navLogin">Войти</button>
+
+            <div class="nav-auth" id="navUser" hidden>
+                <span class="nav-user-name" id="navUserName"></span>
+                <a href="admin.html" class="nav-ghost" id="navAdmin" hidden>Админка</a>
+                <button type="button" class="nav-ghost" id="navLogout">Выйти</button>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main>
+
+    <section class="hero">
+        <div class="hero-content">
+
+            <div class="tag">🔥 Minecraft Java Edition Launcher</div>
+
+            <h1>
+                Твой Minecraft.<br>
+                <span>Твоё пламя.</span>
+            </h1>
+
+            <p>
+                BlazeLauncher — современный лаунчер Minecraft Java Edition.
+                Играй, устанавливай моды, создавай собственные профили
+                и открывай новые возможности Minecraft.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="#download" class="btn btn-primary">
+                    ⬇ Скачать BlazeLauncher
+                </a>
+
+                <a href="#features" class="btn btn-secondary">
+                    ✦ Возможности
+                </a>
+            </div>
+
+            <div class="hero-info">
+                <div>
+                    <strong>Java Edition</strong>
+                    <span>Поддержка Minecraft</span>
+                </div>
+
+                <div>
+                    <strong>Modrinth</strong>
+                    <span>Каталог модов</span>
+                </div>
+
+                <div>
+                    <strong>Android</strong>
+                    <span>Мобильный лаунчер</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Объявления: скрыты, пока нет опубликованных (показывает announcements.js) -->
+    <section class="announcements" id="announcements" hidden>
+        <div class="section-title">
+            <h2>📢 <span>Объявления</span></h2>
+        </div>
+
+        <div class="ann-list" id="annList"></div>
+    </section>
+
+    <section class="features" id="features">
+
+        <div class="section-title">
+            <h2>Возможности <span>Blaze</span></h2>
+            <p>Всё необходимое для комфортной игры в одном месте.</p>
+        </div>
+
+        <div class="feature-grid">
+
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3>Minecraft Java</h3>
+                <p>Выбирай версии Minecraft и запускай любимую игру.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🧩</div>
+                <h3>Forge и Fabric</h3>
+                <p>Поддержка популярных загрузчиков модификаций.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3>Modrinth</h3>
+                <p>Поиск и установка модов в удобном каталоге.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">👕</div>
+                <h3>Скины</h3>
+                <p>Используй собственные скины Minecraft.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Визуальные паки</h3>
+                <p>Меняй оформление и добавляй визуальные улучшения.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🎛️</div>
+                <h3>Управление</h3>
+                <p>Настраивай сенсорные кнопки под свой стиль игры.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="download" id="download">
+
+        <div class="download-box">
+
+            <div class="status" id="downloadStatus">🚧 В разработке</div>
+
+            <h2>Готов разжечь пламя?</h2>
+
+            <p id="downloadText">
+                BlazeLauncher пока находится в разработке.<br>
+                Скоро здесь появится возможность скачать приложение.
+            </p>
+
+            <div class="download-buttons">
+                <div class="download-item">
+                    <button type="button" class="btn btn-primary" id="dlAndroid" disabled>🤖 Скачать для Android</button>
+                    <span class="dl-meta" id="metaAndroid">Скоро</span>
+                </div>
+                <div class="download-item">
+                    <button type="button" class="btn btn-primary" id="dlWindows" disabled>🖥️ Скачать для Windows</button>
+                    <span class="dl-meta" id="metaWindows">Скоро</span>
+                </div>
+            </div>
+
+            <p class="download-hint" id="downloadHint"></p>
+
+            <div class="release-notes" id="releaseNotes"></div>
+
+        </div>
+    </section>
+
+    <section id="news">
+
+        <div class="section-title">
+            <h2>Последние <span>новости</span></h2>
+            <p>Следи за развитием BlazeLauncher.</p>
+        </div>
+
+        <div class="news-grid" id="newsGrid">
+
+            <div class="news-card">
+                <div class="date">14.11.2026</div>
+                <h3>🔥 Начало разработки</h3>
+                <p>BlazeLauncher начинает свой путь. Мы готовим современный лаунчер Minecraft Java Edition.</p>
+            </div>
+
+            <div class="news-card">
+                <div class="date">Скоро</div>
+                <h3>🎮 Новый интерфейс</h3>
+                <p>Нас ждёт красивый интерфейс в чёрно-оранжевых цветах.</p>
+            </div>
+
+            <div class="news-card">
+                <div class="date">Скоро</div>
+                <h3>📦 Modrinth</h3>
+                <p>Планируется интеграция каталога модов и удобная установка.</p>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <div>
+        🔥 <strong>BlazeLauncher</strong> © 2026
+    </div>
+
+    <div class="footer-links">
+        <a href="#features">Возможности</a>
+        <a href="#news">Новости</a>
+        <a href="#download">Скачать</a>
+    </div>
+
+    <div>
+        Неофициальный проект Minecraft
+    </div>
+</footer>
+
+<!-- Окно входа и регистрации -->
+<div class="modal" id="authModal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Вход и регистрация">
+
+        <button type="button" class="modal-close" id="modalClose" aria-label="Закрыть">✕</button>
+
+        <div class="modal-tabs" id="modalTabs" role="tablist">
+            <button type="button" class="modal-tab active" id="tabLogin" role="tab" aria-selected="true">Вход</button>
+            <button type="button" class="modal-tab" id="tabRegister" role="tab" aria-selected="false">Регистрация</button>
+        </div>
+
+        <form class="auth-form" id="loginForm">
+            <div class="field">
+                <label for="logEmail">Почта</label>
+                <input id="logEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+            <div class="field">
+                <label for="logPass">Пароль</label>
+                <input id="logPass" type="password" autocomplete="current-password" required>
+            </div>
+            <p class="form-msg" id="loginMsg" role="status"></p>
+            <button type="submit" class="btn btn-primary">Войти</button>
+            <button type="button" class="link-btn" id="forgotLink">Забыли пароль?</button>
+        </form>
+
+        <form class="auth-form" id="registerForm" hidden>
+            <div class="field">
+                <label for="regName">Ник в Minecraft</label>
+                <input id="regName" type="text" autocomplete="username" placeholder="Steve_2026"
+                       minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" required>
+                <small>3–16 символов: латиница, цифры и _</small>
+            </div>
+            <div class="field">
+                <label for="regEmail">Почта</label>
+                <input id="regEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+            <div class="field">
+                <label for="regPass">Пароль</label>
+                <input id="regPass" type="password" autocomplete="new-password" minlength="8" required>
+                <small>Минимум 8 символов</small>
+            </div>
+            <div class="field">
+                <label for="regPass2">Повтори пароль</label>
+                <input id="regPass2" type="password" autocomplete="new-password" minlength="8" required>
+            </div>
+            <p class="form-msg" id="registerMsg" role="status"></p>
+            <button type="submit" class="btn btn-primary">Создать аккаунт</button>
+        </form>
+
+        <form class="auth-form" id="resetForm" hidden>
+            <h3 class="form-title">Сброс пароля</h3>
+            <p class="form-hint">Введи почту аккаунта. Мы отправим ссылку, по которой можно задать новый пароль.</p>
+            <div class="field">
+                <label for="resetEmail">Почта</label>
+                <input id="resetEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+            <p class="form-msg" id="resetMsg" role="status"></p>
+            <button type="submit" class="btn btn-primary">Отправить ссылку</button>
+            <button type="button" class="link-btn" id="backToLogin">Вернуться ко входу</button>
+        </form>
+
+        <form class="auth-form" id="newPassForm" hidden>
+            <h3 class="form-title">Новый пароль</h3>
+            <div class="field">
+                <label for="newPass">Новый пароль</label>
+                <input id="newPass" type="password" autocomplete="new-password" minlength="8" required>
+                <small>Минимум 8 символов</small>
+            </div>
+            <div class="field">
+                <label for="newPass2">Повтори пароль</label>
+                <input id="newPass2" type="password" autocomplete="new-password" minlength="8" required>
+            </div>
+            <p class="form-msg" id="newPassMsg" role="status"></p>
+            <button type="submit" class="btn btn-primary">Сохранить пароль</button>
+        </form>
+
+    </div>
+</div>
+
+<script type="module" src="app.js"></script>
+<script type="module" src="announcements.js"></script>
+<script type="module" src="maintenance.js"></script>
+
+</body>
+</html>

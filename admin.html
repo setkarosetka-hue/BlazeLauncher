@@ -1,0 +1,593 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>Админ-панель — BlazeLauncher</title>
+
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #090909;
+            --surface: #141414;
+            --surface2: #1c1c1c;
+            --orange: #ff7518;
+            --yellow: #ffb52e;
+            --text: #ffffff;
+            --muted: #999999;
+            --border: #292929;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Onest', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        button, input, select, textarea { font-family: inherit; }
+        button { cursor: pointer; }
+        [hidden] { display: none !important; }
+
+        .navbar {
+            height: 76px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5%;
+            border-bottom: 1px solid var(--border);
+            background: rgba(9, 9, 9, 0.9);
+        }
+
+        .logo { font-size: 24px; font-weight: 800; letter-spacing: -1px; }
+        .logo span, h1 span { color: var(--orange); }
+        .back-link { color: #bdbdbd; font-size: 14px; }
+        .back-link:hover { color: var(--yellow); }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 5% 80px;
+        }
+
+        h1 { font-size: clamp(28px, 4vw, 38px); font-weight: 800; }
+
+        .gate {
+            max-width: 460px;
+            margin: 80px auto 0;
+            padding: 36px 28px;
+            text-align: center;
+            border-radius: 22px;
+            border: 1px solid #49301c;
+            background: radial-gradient(circle at top, #28170c, transparent 65%), var(--surface);
+        }
+
+        .gate p { color: var(--muted); line-height: 1.7; margin-bottom: 22px; }
+
+        .btn {
+            display: inline-block;
+            padding: 13px 22px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #111;
+            background: linear-gradient(135deg, var(--orange), var(--yellow));
+        }
+
+        .btn:disabled { opacity: 0.6; cursor: wait; }
+
+        .btn-ghost {
+            color: #fff;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover { border-color: var(--orange); }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin: 26px 0;
+        }
+
+        .stat {
+            padding: 16px 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 28px;
+            color: var(--yellow);
+        }
+
+        .stat span { font-size: 12px; color: var(--muted); }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .toolbar input, .toolbar select {
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .toolbar input { flex: 1; min-width: 200px; }
+        .toolbar input:focus, .toolbar select:focus { border-color: var(--orange); }
+
+        .status-line {
+            min-height: 22px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #ff6b6b;
+        }
+
+        .status-line.ok { color: #7ddc8a; }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        table { width: 100%; min-width: 760px; border-collapse: collapse; }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 14px 16px;
+            font-size: 14px;
+            vertical-align: top;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+        .name { font-weight: 700; }
+        .muted { color: var(--muted); }
+
+        .empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 36px 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            margin-left: 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge.first { margin-left: 0; }
+        .badge.admin { color: var(--yellow); background: #24180d; border: 1px solid #49301c; }
+        .badge.banned { color: #ff6b6b; background: #2a1212; border: 1px solid #5a2323; }
+        .badge.ok { color: #7ddc8a; background: #112016; border: 1px solid #214a2b; }
+
+        .reason {
+            margin-top: 8px;
+            max-width: 260px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--muted);
+            word-break: break-word;
+        }
+
+        .act {
+            margin: 0 6px 6px 0;
+            padding: 8px 12px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .act:hover { border-color: var(--orange); }
+        .act.danger:hover { border-color: #ff6b6b; color: #ff6b6b; }
+        .act:disabled { opacity: 0.5; cursor: wait; }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 420px;
+            padding: 28px;
+            border-radius: 22px;
+            border: 1px solid #49301c;
+            background: radial-gradient(circle at top, #28170c, transparent 65%), var(--surface);
+        }
+
+        .modal-box h3 { font-size: 20px; margin-bottom: 6px; }
+        .modal-box p { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+
+        .modal-box textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 13px 14px;
+            resize: vertical;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .modal-box textarea:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(255, 117, 24, 0.15);
+        }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .modal-actions .btn { flex: 1; text-align: center; }
+        .modal-msg { min-height: 20px; margin-top: 10px; font-size: 13px; color: #ff6b6b; }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            width: fit-content;
+            max-width: 100%;
+            overflow-x: auto;
+            padding: 5px;
+            margin-top: 22px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .tab {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            color: #111;
+            background: linear-gradient(135deg, var(--orange), var(--yellow));
+        }
+
+        .sub { margin: 30px 0 14px; font-size: 20px; }
+
+        .rel-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 22px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .rel-form .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #bdbdbd;
+        }
+
+        .field input, .field select, .field textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--orange); }
+        .field textarea { min-height: 90px; resize: vertical; }
+        .field small { display: block; margin-top: 5px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+
+        .field .check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .field .check input { width: auto; accent-color: var(--orange); }
+        .rel-form .btn { align-self: flex-start; }
+        .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        .rel-form .btn-row .btn { align-self: auto; }
+
+        .note {
+            margin-top: 6px;
+            max-width: 280px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--muted);
+            word-break: break-word;
+        }
+
+        @media (max-width: 700px) {
+            .rel-form .row { grid-template-columns: 1fr; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .navbar { height: 65px; }
+            .logo { font-size: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <a href="index.html" class="logo">🔥 Blaze<span>Launcher</span></a>
+    <a href="index.html" class="back-link">← На сайт</a>
+</header>
+
+<main class="wrap">
+
+    <div class="gate" id="gate">
+        <p id="gateText">Проверяем доступ…</p>
+        <a href="index.html" class="btn">На главную</a>
+    </div>
+
+    <div id="panel" hidden>
+        <h1>Админ-<span>панель</span></h1>
+
+        <div class="tabs" role="tablist">
+            <button type="button" class="tab active" id="tabUsers" role="tab">Пользователи</button>
+            <button type="button" class="tab" id="tabReleases" role="tab">Релизы</button>
+            <button type="button" class="tab" id="tabAnn" role="tab">Объявления</button>
+            <button type="button" class="tab" id="tabMaint" role="tab">Техработы</button>
+            <button type="button" class="tab" id="tabPreorders" role="tab">Предзаказы</button>
+        </div>
+
+        <section id="usersSection">
+            <div class="stats">
+                <div class="stat"><strong id="statTotal">0</strong><span>Всего пользователей</span></div>
+                <div class="stat"><strong id="statActive">0</strong><span>Активных</span></div>
+                <div class="stat"><strong id="statBanned">0</strong><span>Забанено</span></div>
+                <div class="stat"><strong id="statAdmins">0</strong><span>Админов</span></div>
+            </div>
+
+            <div class="toolbar">
+                <input id="search" type="search" placeholder="Поиск по нику или почте">
+                <select id="filter" aria-label="Фильтр">
+                    <option value="all">Все</option>
+                    <option value="active">Активные</option>
+                    <option value="banned">Забаненные</option>
+                    <option value="admin">Админы</option>
+                </select>
+                <button type="button" class="btn btn-ghost" id="refreshBtn">Обновить</button>
+            </div>
+
+            <p class="status-line" id="status" role="status"></p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Ник</th><th>Почта</th><th>Регистрация</th><th>Статус</th><th>Действия</th></tr></thead>
+                    <tbody id="rows"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="releasesSection" hidden>
+            <h2 class="sub">Новый релиз</h2>
+
+            <form class="rel-form" id="releaseForm">
+                <div class="row">
+                    <div class="field">
+                        <label for="relPlatform">Платформа</label>
+                        <select id="relPlatform">
+                            <option value="android">Android (.apk)</option>
+                            <option value="windows">Windows (.exe, .zip, .msi)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="relVersion">Версия</label>
+                        <input id="relVersion" type="text" maxlength="30" placeholder="0.1.0" required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="relReleaseAt">Дата и время выхода</label>
+                    <input id="relReleaseAt" type="datetime-local">
+                    <small>До указанного времени кнопка скачивания будет недоступна. Если оставить поле пустым, релиз выйдет сразу после публикации.</small>
+                </div>
+
+                <div class="field">
+                    <label for="relNotes">Что нового</label>
+                    <textarea id="relNotes" maxlength="2000" placeholder="Что изменилось в этой версии (по строке на пункт)"></textarea>
+                </div>
+
+                <div class="field">
+                    <label for="relFile">Файл лаунчера</label>
+                    <input id="relFile" type="file" accept=".apk">
+                    <small>Попадает в приватное хранилище, скачать смогут только вошедшие и не забаненные. Лимит размера задаётся в настройках Supabase.</small>
+                </div>
+
+                <div class="field">
+                    <label for="relUrl">…или ссылка на файл</label>
+                    <input id="relUrl" type="url" placeholder="https://github.com/…/releases/download/…">
+                    <small>Для больших файлов. Если выбран файл, ссылка игнорируется.</small>
+                </div>
+
+                <p class="status-line" id="relStatus" role="status"></p>
+                <button type="submit" class="btn" id="relSubmit">Опубликовать релиз</button>
+            </form>
+
+            <h2 class="sub">Все релизы</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Платформа</th><th>Версия</th><th>Файл</th><th>Дата</th><th>Статус</th><th>Действия</th></tr></thead>
+                    <tbody id="relRows"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="annSection" hidden>
+            <h2 class="sub">Новое объявление</h2>
+
+            <form class="rel-form" id="annForm">
+                <div class="row">
+                    <div class="field">
+                        <label for="annTitle">Заголовок</label>
+                        <input id="annTitle" type="text" maxlength="120" placeholder="Например: Вышла версия 0.1.0" required>
+                    </div>
+                    <div class="field">
+                        <label for="annKind">Тип</label>
+                        <select id="annKind">
+                            <option value="info">Обычное</option>
+                            <option value="update">Обновление</option>
+                            <option value="warning">Важное</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="annBody">Текст</label>
+                    <textarea id="annBody" maxlength="2000" placeholder="Что хочешь сообщить посетителям сайта" required></textarea>
+                </div>
+
+                <div class="field">
+                    <label class="check" for="annPinned">
+                        <input id="annPinned" type="checkbox">
+                        Закрепить сверху
+                    </label>
+                </div>
+
+                <p class="status-line" id="annMsg" role="status"></p>
+                <button type="submit" class="btn" id="annSubmit">Опубликовать объявление</button>
+            </form>
+
+            <h2 class="sub">Все объявления</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Заголовок</th><th>Тип</th><th>Дата</th><th>Действия</th></tr></thead>
+                    <tbody id="annRows"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="maintSection" hidden>
+            <h2 class="sub">Технические работы</h2>
+
+            <div class="rel-form">
+                <div>
+                    <span class="muted" style="font-size:13px; margin-right:8px;">Сейчас:</span>
+                    <span class="badge first ok" id="mState">—</span>
+                </div>
+
+                <div class="field">
+                    <label for="mReason">Причина</label>
+                    <input id="mReason" type="text" maxlength="200" placeholder="Например: обновление сервера">
+                </div>
+
+                <div class="field">
+                    <label for="mUntil">Закончатся (необязательно)</label>
+                    <input id="mUntil" type="datetime-local">
+                </div>
+
+                <div class="field">
+                    <label for="mAnnounce">Объявление</label>
+                    <textarea id="mAnnounce" placeholder="Текст, который увидят посетители сайта"></textarea>
+                </div>
+
+                <p class="status-line" id="mMsg" role="status"></p>
+
+                <div class="btn-row">
+                    <button type="button" class="btn" id="mStart">Запустить техработы</button>
+                    <button type="button" class="btn btn-ghost" id="mStop">Выключить</button>
+                    <button type="button" class="btn btn-ghost" id="mSaveAnn">Сохранить только объявление</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="preordersSection" hidden>
+            <h2 class="sub">Предзаказы BlazeLauncher</h2>
+
+            <div class="toolbar">
+                <button type="button" class="btn btn-ghost" id="preordersRefreshBtn">Обновить список</button>
+            </div>
+
+            <p class="status-line" id="preordersMsg" role="status"></p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Ник</th><th>Почта</th><th>Дата</th><th>Статус</th><th>Действия</th></tr>
+                    </thead>
+                    <tbody id="preorderRows"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div class="modal" id="banModal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="banTitle">
+        <h3 id="banTitle">Забанить пользователя</h3>
+        <p id="banUser"></p>
+        <textarea id="banReason" maxlength="300" placeholder="Причина бана (её увидит пользователь)"></textarea>
+        <p class="modal-msg" id="banMsg"></p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" id="banCancel">Отмена</button>
+            <button type="button" class="btn" id="banConfirm">Забанить</button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>
