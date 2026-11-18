@@ -365,7 +365,7 @@ async function loadPreorders() {
 
     const { data, error } = await supabase
         .from("preorders")
-        .select("id, user_id, username, email, status, created_at")
+        .select("id, user_id, username, email, status, created_at, approved_at, expires_at, used_at")
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -431,6 +431,16 @@ function renderPreorders() {
 
         const statusCell = document.createElement("td");
         statusCell.append(preorderStatusBadge(p.status));
+
+        if (p.status === "approved" && p.expires_at) {
+            const expiry = document.createElement("div");
+            expiry.className = "note";
+            expiry.textContent = p.used_at
+                ? "Возможность использована"
+                : "Действует до: " + formatDate(p.expires_at);
+            statusCell.append(expiry);
+        }
+
         tr.append(statusCell);
 
         const actions = document.createElement("td");
@@ -458,6 +468,8 @@ function renderPreorders() {
     });
 }
 
+/* ---------- Изменение статуса и отправка письма ---------- */
+
 async function updatePreorderStatus(id, status) {
     if (preorderBusy) return;
 
@@ -466,33 +478,84 @@ async function updatePreorderStatus(id, status) {
 
     const statusName = PREORDER_STATUSES[status];
 
-    if (!window.confirm(
-        `Изменить статус предзаказа пользователя ${preorder.username} на «${statusName}»?`
-    )) {
+    const question = status === "approved"
+        ? `Одобрить предзаказ пользователя ${preorder.username} и отправить ему письмо на ${preorder.email}? После одобрения у него будет 24 часа.`
+        : `Изменить статус предзаказа пользователя ${preorder.username} на «${statusName}»?`;
+
+    if (!window.confirm(question)) {
         return;
     }
 
     preorderBusy = true;
     preorderMsg("Сохраняем статус…", true);
 
-    const { error } = await supabase.rpc("admin_set_preorder_status", {
-        target: id,
-        new_status: status,
-    });
+    try {
+        const { error } = await supabase.rpc("admin_set_preorder_status", {
+            target: id,
+            new_status: status,
+        });
 
-    preorderBusy = false;
+        if (error) {
+            preorderMsg("Не удалось изменить статус: " + error.message);
+            return;
+        }
 
-    if (error) {
-        preorderMsg("Ошибка: " + error.message);
-        return;
+        await loadPreorders();
+
+        if (status === "approved") {
+            preorderMsg("Статус одобрен. Отправляем письмо…", true);
+
+            const { data, error: emailError } = await supabase.functions.invoke(
+                "send-preorder-email",
+                {
+                    body: {
+                        preorder_id: id,
+                    },
+                }
+            );
+
+            if (emailError) {
+                console.error("Ошибка отправки письма:", emailError);
+
+                preorderMsg(
+                    "Предзаказ одобрен, но письмо не отправлено. Ошибка: " +
+                    (emailError.message || "неизвестная ошибка")
+                );
+
+                return;
+            }
+
+            if (!data?.success) {
+                console.error("Ответ функции отправки письма:", data);
+
+                preorderMsg(
+                    "Предзаказ одобрен, но отправка письма не подтверждена: " +
+                    (data?.error || "неизвестная ошибка")
+                );
+
+                return;
+            }
+
+            preorderMsg(
+                `Предзаказ ${preorder.username} одобрен. Письмо отправлено на ${preorder.email}`,
+                true
+            );
+
+            return;
+        }
+
+        preorderMsg(
+            `Статус предзаказа пользователя ${preorder.username} изменён: ${statusName}`,
+            true
+        );
+
+    } catch (error) {
+        console.error(error);
+        preorderMsg("Ошибка: " + (error?.message || error));
+
+    } finally {
+        preorderBusy = false;
     }
-
-    await loadPreorders();
-
-    preorderMsg(
-        `Статус предзаказа пользователя ${preorder.username} изменён: ${statusName}`,
-        true
-    );
 }
 
 $("preordersRefreshBtn").addEventListener("click", loadPreorders);
