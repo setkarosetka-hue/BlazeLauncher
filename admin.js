@@ -1,4 +1,3 @@
-
 import { supabase } from "./supabase.js";
 
 const $ = (id) => document.getElementById(id);
@@ -510,7 +509,7 @@ async function deletePreorder(p) {
     }
 }
 
-/* ---------- Изменение статуса и отправка письма ---------- */
+/* ---------- Изменение статуса предзаказа ---------- */
 
 async function updatePreorderStatus(id, status) {
     if (preorderBusy) return;
@@ -521,7 +520,7 @@ async function updatePreorderStatus(id, status) {
     const statusName = PREORDER_STATUSES[status];
 
     const question = status === "approved"
-        ? `Одобрить предзаказ пользователя ${preorder.username} и отправить ему письмо на ${preorder.email}? После одобрения у него будет 24 часа.`
+        ? `Одобрить предзаказ пользователя ${preorder.username}? После одобрения у него будет 24 часа. Письмо временно отправляться не будет.`
         : `Изменить статус предзаказа пользователя ${preorder.username} на «${statusName}»?`;
 
     if (!window.confirm(question)) {
@@ -544,50 +543,10 @@ async function updatePreorderStatus(id, status) {
 
         await loadPreorders();
 
-        if (status === "approved") {
-            preorderMsg("Статус одобрен. Отправляем письмо…", true);
-
-            const { data, error: emailError } = await supabase.functions.invoke(
-                "send-preorder-email",
-                {
-                    body: {
-                        preorder_id: id,
-                    },
-                }
-            );
-
-            if (emailError) {
-                console.error("Ошибка отправки письма:", emailError);
-
-                preorderMsg(
-                    "Предзаказ одобрен, но письмо не отправлено. Ошибка: " +
-                    (emailError.message || "неизвестная ошибка")
-                );
-
-                return;
-            }
-
-            if (!data?.success) {
-                console.error("Ответ функции отправки письма:", data);
-
-                preorderMsg(
-                    "Предзаказ одобрен, но отправка письма не подтверждена: " +
-                    (data?.error || "неизвестная ошибка")
-                );
-
-                return;
-            }
-
-            preorderMsg(
-                `Предзаказ ${preorder.username} одобрен. Письмо отправлено на ${preorder.email}`,
-                true
-            );
-
-            return;
-        }
-
         preorderMsg(
-            `Статус предзаказа пользователя ${preorder.username} изменён: ${statusName}`,
+            status === "approved"
+                ? `Предзаказ ${preorder.username} одобрен. Письмо временно отключено; срок действия — 24 часа.`
+                : `Статус предзаказа пользователя ${preorder.username} изменён: ${statusName}`,
             true
         );
 
