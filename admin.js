@@ -463,9 +463,51 @@ function renderPreorders() {
             );
         }
 
+        actions.append(
+            actionButton("Удалить", () => deletePreorder(p), true)
+        );
+
         tr.append(actions);
         tbody.append(tr);
     });
+}
+
+/* ---------- Удаление предзаказа ---------- */
+
+async function deletePreorder(p) {
+    if (preorderBusy) return;
+
+    const confirmed = window.confirm(
+        `Удалить предзаказ пользователя ${p.username} (${p.email})?\n\nЭто действие нельзя отменить.`
+    );
+
+    if (!confirmed) return;
+
+    preorderBusy = true;
+    preorderMsg("Удаляем предзаказ…", true);
+
+    try {
+        const { error } = await supabase.rpc("admin_delete_preorder", {
+            target: p.id,
+        });
+
+        if (error) {
+            preorderMsg("Не удалось удалить предзаказ: " + error.message);
+            return;
+        }
+
+        await loadPreorders();
+
+        preorderMsg(
+            `Предзаказ пользователя ${p.username} удалён`,
+            true
+        );
+    } catch (error) {
+        console.error(error);
+        preorderMsg("Ошибка удаления: " + (error?.message || error));
+    } finally {
+        preorderBusy = false;
+    }
 }
 
 /* ---------- Изменение статуса и отправка письма ---------- */
