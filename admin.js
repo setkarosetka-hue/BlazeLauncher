@@ -1,13 +1,15 @@
+
 import { supabase } from "./supabase.js";
 
 const $ = (id) => document.getElementById(id);
 
-let me = null;        // id текущего админа
-let users = [];       // все пользователи
-let banTarget = null; // кого сейчас банят
-let busy = false;     // защита от двойных кликов
+let me = null;
+let users = [];
+let banTarget = null;
+let busy = false;
 
 /* ---------- Сообщения ---------- */
+
 const ERRORS = {
     "forbidden": "Нет прав администратора",
     "cannot change yourself": "Нельзя менять самого себя",
@@ -34,48 +36,6 @@ function showGate(text) {
     $("panel").hidden = true;
 }
 
-/* ---------- Проверка доступа ---------- */
-async function init() {
-    const { data } = await supabase.auth.getSession();
-    const session = data.session;
-
-    if (!session) {
-        return showGate("Нужно войти в аккаунт администратора. Войди на главной странице и вернись сюда.");
-    }
-
-    me = session.user.id;
-
-    const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("role, banned")
-        .eq("id", me)
-        .maybeSingle();
-
-    if (error || !profile || profile.role !== "admin" || profile.banned) {
-        return showGate("У тебя нет доступа к этой странице.");
-    }
-
-    $("gate").hidden = true;
-    $("panel").hidden = false;
-    await loadUsers();
-}
-
-/* ---------- Список пользователей ---------- */
-async function loadUsers() {
-    setStatus("Загружаем…", true);
-
-    const { data, error } = await supabase
-        .from("profiles")
-        .select("id, username, email, role, banned, ban_reason, banned_at, created_at")
-        .order("created_at", { ascending: false });
-
-    if (error) return setStatus(errText(error));
-
-    users = data || [];
-    setStatus("");
-    render();
-}
-
 function td(text, className) {
     const el = document.createElement("td");
     if (className) el.className = className;
@@ -100,7 +60,63 @@ function actionButton(label, onClick, danger = false) {
 }
 
 function formatDate(value) {
-    return new Date(value).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" });
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+    return date.toLocaleString("ru-RU", {
+        dateStyle: "short",
+        timeStyle: "short",
+    });
+}
+
+/* ---------- Проверка доступа ---------- */
+
+async function init() {
+    const { data, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+        return showGate("Не удалось проверить вход: " + sessionError.message);
+    }
+
+    const session = data.session;
+
+    if (!session) {
+        return showGate("Нужно войти в аккаунт администратора. Войди на главной странице и вернись сюда.");
+    }
+
+    me = session.user.id;
+
+    const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role, banned")
+        .eq("id", me)
+        .maybeSingle();
+
+    if (error || !profile || profile.role !== "admin" || profile.banned) {
+        return showGate("У тебя нет доступа к этой странице.");
+    }
+
+    $("gate").hidden = true;
+    $("panel").hidden = false;
+
+    await loadUsers();
+}
+
+/* ---------- Пользователи ---------- */
+
+async function loadUsers() {
+    setStatus("Загружаем…", true);
+
+    const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, email, role, banned, ban_reason, banned_at, created_at")
+        .order("created_at", { ascending: false });
+
+    if (error) return setStatus(errText(error));
+
+    users = data || [];
+    setStatus("");
+    renderUsers();
 }
 
 function userRow(u) {
@@ -108,32 +124,36 @@ function userRow(u) {
     const isMe = u.id === me;
     const isAdmin = u.role === "admin";
 
-    // Ник
     const nameCell = document.createElement("td");
     const name = document.createElement("span");
     name.className = "name";
     name.textContent = u.username || "—";
     nameCell.append(name);
+
     if (isAdmin) nameCell.append(badge("админ", "admin"));
     tr.append(nameCell);
 
-    // Почта и дата
     tr.append(td(u.email || "—", "muted"));
     tr.append(td(formatDate(u.created_at), "muted"));
 
-    // Статус
     const statusCell = document.createElement("td");
-    statusCell.append(u.banned ? badge("Забанен", "banned", true) : badge("Активен", "ok", true));
+    statusCell.append(
+        u.banned
+            ? badge("Забанен", "banned", true)
+            : badge("Активен", "ok", true)
+    );
+
     if (u.banned) {
         const reason = document.createElement("div");
         reason.className = "reason";
         reason.textContent = "Причина: " + (u.ban_reason || "не указана");
         statusCell.append(reason);
     }
+
     tr.append(statusCell);
 
-    // Действия
     const actions = document.createElement("td");
+
     if (isMe) {
         actions.className = "muted";
         actions.textContent = "Это ты";
@@ -150,12 +170,12 @@ function userRow(u) {
             actions.append(actionButton("Выдать админку", () => setRole(u, true)));
         }
     }
-    tr.append(actions);
 
+    tr.append(actions);
     return tr;
 }
 
-function render() {
+function renderUsers() {
     $("statTotal").textContent = users.length;
     $("statActive").textContent = users.filter((u) => !u.banned).length;
     $("statBanned").textContent = users.filter((u) => u.banned).length;
@@ -169,6 +189,7 @@ function render() {
         if (f === "banned" && !u.banned) return false;
         if (f === "admin" && u.role !== "admin") return false;
         if (!q) return true;
+
         return (
             (u.username || "").toLowerCase().includes(q) ||
             (u.email || "").toLowerCase().includes(q)
@@ -190,9 +211,11 @@ function render() {
     list.forEach((u) => tbody.append(userRow(u)));
 }
 
-/* ---------- Действия ---------- */
+/* ---------- Действия с пользователями ---------- */
+
 async function run(request, okText) {
     if (busy) return false;
+
     busy = true;
     const { error } = await request;
     busy = false;
@@ -209,7 +232,11 @@ async function run(request, okText) {
 
 function setBan(u, doBan, reason = null) {
     return run(
-        supabase.rpc("admin_set_ban", { target: u.id, do_ban: doBan, reason }),
+        supabase.rpc("admin_set_ban", {
+            target: u.id,
+            do_ban: doBan,
+            reason,
+        }),
         doBan ? `Забанен: ${u.username}` : `Разбанен: ${u.username}`
     );
 }
@@ -218,15 +245,22 @@ function setRole(u, makeAdmin) {
     const question = makeAdmin
         ? `Выдать админку пользователю ${u.username}? Он сможет банить людей и выдавать админку другим.`
         : `Снять админку с ${u.username}?`;
+
     if (!window.confirm(question)) return;
 
     return run(
-        supabase.rpc("admin_set_role", { target: u.id, make_admin: makeAdmin }),
-        makeAdmin ? `${u.username} теперь админ` : `${u.username} больше не админ`
+        supabase.rpc("admin_set_role", {
+            target: u.id,
+            make_admin: makeAdmin,
+        }),
+        makeAdmin
+            ? `${u.username} теперь админ`
+            : `${u.username} больше не админ`
     );
 }
 
 /* ---------- Окно бана ---------- */
+
 function openBanModal(u) {
     banTarget = u;
     $("banUser").textContent = `${u.username} · ${u.email || "без почты"}`;
@@ -242,40 +276,48 @@ function closeBanModal() {
 }
 
 $("banCancel").addEventListener("click", closeBanModal);
+
 $("banModal").addEventListener("click", (e) => {
     if (e.target === $("banModal")) closeBanModal();
 });
+
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !$("banModal").hidden) closeBanModal();
 });
 
 $("banConfirm").addEventListener("click", async () => {
     const reason = $("banReason").value.trim();
+
     if (!reason) {
         $("banMsg").textContent = "Укажи причину бана";
         return;
     }
+
     if (!banTarget) return;
 
     const target = banTarget;
     const ok = await setBan(target, true, reason);
+
     if (ok) closeBanModal();
     else $("banMsg").textContent = $("status").textContent;
 });
 
 /* ---------- Поиск и фильтры ---------- */
-$("search").addEventListener("input", render);
-$("filter").addEventListener("change", render);
+
+$("search").addEventListener("input", renderUsers);
+$("filter").addEventListener("change", renderUsers);
 $("refreshBtn").addEventListener("click", loadUsers);
 
 /* ---------- Вкладки ---------- */
+
 let releasesLoaded = false;
 
 const SECTIONS = {
-    users:    { tab: "tabUsers",    section: "usersSection" },
+    users: { tab: "tabUsers", section: "usersSection" },
     releases: { tab: "tabReleases", section: "releasesSection" },
-    ann:      { tab: "tabAnn",      section: "annSection" },
-    maint:    { tab: "tabMaint",    section: "maintSection" },
+    ann: { tab: "tabAnn", section: "annSection" },
+    maint: { tab: "tabMaint", section: "maintSection" },
+    preorders: { tab: "tabPreorders", section: "preordersSection" },
 };
 
 function showSection(name) {
@@ -289,22 +331,180 @@ function showSection(name) {
         releasesLoaded = true;
         loadReleases();
     }
-    if (name === "ann") {
-        loadAnn();
-    }
-    if (name === "maint") {
-        loadMaint();
-    }
+
+    if (name === "ann") loadAnn();
+    if (name === "maint") loadMaint();
+    if (name === "preorders") loadPreorders();
 }
 
 $("tabUsers").addEventListener("click", () => showSection("users"));
 $("tabReleases").addEventListener("click", () => showSection("releases"));
 $("tabAnn").addEventListener("click", () => showSection("ann"));
 $("tabMaint").addEventListener("click", () => showSection("maint"));
+$("tabPreorders").addEventListener("click", () => showSection("preorders"));
+
+/* ---------- Предзаказы ---------- */
+
+let preorders = [];
+let preorderBusy = false;
+
+const PREORDER_STATUSES = {
+    new: "Ожидает",
+    approved: "Подтверждён",
+    rejected: "Отклонён",
+};
+
+function preorderMsg(text, ok = false) {
+    const el = $("preordersMsg");
+    el.textContent = text;
+    el.classList.toggle("ok", ok);
+}
+
+async function loadPreorders() {
+    preorderMsg("Загружаем предзаказы…", true);
+
+    const { data, error } = await supabase
+        .from("preorders")
+        .select("id, user_id, username, email, status, created_at")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        preorderMsg("Не удалось загрузить предзаказы: " + error.message);
+        return;
+    }
+
+    preorders = data || [];
+    renderPreorders();
+
+    preorderMsg(
+        preorders.length
+            ? `Всего предзаказов: ${preorders.length}`
+            : "Пока никто не оформил предзаказ",
+        true
+    );
+}
+
+function preorderStatusBadge(status) {
+    const el = document.createElement("span");
+
+    let kind = "badge";
+    if (status === "approved") kind += " ok";
+    else if (status === "rejected") kind += " banned";
+    else kind += " admin";
+
+    el.className = kind + " first";
+    el.textContent = PREORDER_STATUSES[status] || status || "Неизвестно";
+
+    return el;
+}
+
+function preorderActionButton(label, id, status, danger = false) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "act" + (danger ? " danger" : "");
+    btn.textContent = label;
+
+    btn.addEventListener("click", () => updatePreorderStatus(id, status));
+
+    return btn;
+}
+
+function renderPreorders() {
+    const tbody = $("preorderRows");
+    tbody.replaceChildren();
+
+    if (preorders.length === 0) {
+        const tr = document.createElement("tr");
+        const cell = td("Предзаказов пока нет", "empty");
+        cell.colSpan = 5;
+        tr.append(cell);
+        tbody.append(tr);
+        return;
+    }
+
+    preorders.forEach((p) => {
+        const tr = document.createElement("tr");
+
+        tr.append(td(p.username || "—", "name"));
+        tr.append(td(p.email || "—", "muted"));
+        tr.append(td(formatDate(p.created_at), "muted"));
+
+        const statusCell = document.createElement("td");
+        statusCell.append(preorderStatusBadge(p.status));
+        tr.append(statusCell);
+
+        const actions = document.createElement("td");
+
+        if (p.status !== "approved") {
+            actions.append(
+                preorderActionButton("Подтвердить", p.id, "approved")
+            );
+        }
+
+        if (p.status !== "rejected") {
+            actions.append(
+                preorderActionButton("Отклонить", p.id, "rejected", true)
+            );
+        }
+
+        if (p.status !== "new") {
+            actions.append(
+                preorderActionButton("Вернуть в ожидание", p.id, "new")
+            );
+        }
+
+        tr.append(actions);
+        tbody.append(tr);
+    });
+}
+
+async function updatePreorderStatus(id, status) {
+    if (preorderBusy) return;
+
+    const preorder = preorders.find((p) => p.id === id);
+    if (!preorder) return;
+
+    const statusName = PREORDER_STATUSES[status];
+
+    if (!window.confirm(
+        `Изменить статус предзаказа пользователя ${preorder.username} на «${statusName}»?`
+    )) {
+        return;
+    }
+
+    preorderBusy = true;
+    preorderMsg("Сохраняем статус…", true);
+
+    const { error } = await supabase.rpc("admin_set_preorder_status", {
+        target: id,
+        new_status: status,
+    });
+
+    preorderBusy = false;
+
+    if (error) {
+        preorderMsg("Ошибка: " + error.message);
+        return;
+    }
+
+    await loadPreorders();
+
+    preorderMsg(
+        `Статус предзаказа пользователя ${preorder.username} изменён: ${statusName}`,
+        true
+    );
+}
+
+$("preordersRefreshBtn").addEventListener("click", loadPreorders);
 
 /* ---------- Релизы ---------- */
+
 const PLATFORMS = { android: "Android", windows: "Windows" };
-const EXTENSIONS = { android: [".apk"], windows: [".exe", ".zip", ".msi"] };
+const EXTENSIONS = {
+    android: [".apk"],
+    windows: [".exe", ".zip", ".msi"],
+};
+
 let releases = [];
 
 function relStatus(text, ok = false) {
@@ -315,18 +515,23 @@ function relStatus(text, ok = false) {
 
 function uploadErrText(error) {
     const m = (error?.message || "").toLowerCase();
+
     if (m.includes("maximum") || m.includes("too large") || m.includes("413") || m.includes("size")) {
-        return "Файл больше лимита Supabase (на бесплатном плане 50 МБ). Загрузи его на GitHub Releases и вставь ссылку.";
+        return "Файл больше лимита Supabase. Загрузи его на GitHub Releases и вставь ссылку.";
     }
+
     if (m.includes("already exists") || m.includes("duplicate")) {
         return "Файл для этой платформы и версии уже загружен. Измени версию или удали старый релиз.";
     }
+
     if (m.includes("bucket not found")) {
         return "В Supabase нет хранилища releases. Выполни SQL из инструкции.";
     }
+
     if (m.includes("row-level security") || m.includes("unauthorized")) {
         return "Нет прав на загрузку. Проверь SQL-правила хранилища.";
     }
+
     return errText(error);
 }
 
@@ -337,10 +542,12 @@ function formatSize(bytes) {
 function setAccept() {
     $("relFile").accept = EXTENSIONS[$("relPlatform").value].join(",");
 }
+
 $("relPlatform").addEventListener("change", () => {
     $("relFile").value = "";
     setAccept();
 });
+
 setAccept();
 
 async function loadReleases() {
@@ -378,35 +585,43 @@ function renderReleases() {
         v.className = "name";
         v.textContent = r.version;
         versionCell.append(v);
+
         if (r.changelog) {
             const note = document.createElement("div");
             note.className = "note";
-            note.textContent = r.changelog.length > 90 ? r.changelog.slice(0, 90) + "…" : r.changelog;
+            note.textContent = r.changelog.length > 90
+                ? r.changelog.slice(0, 90) + "…"
+                : r.changelog;
             versionCell.append(note);
         }
+
         tr.append(versionCell);
 
         const fileText = r.file_path
             ? "Файл" + (r.file_size ? " · " + formatSize(r.file_size) : "")
             : "Ссылка";
-        tr.append(td(fileText, "muted"));
 
+        tr.append(td(fileText, "muted"));
         tr.append(td(formatDate(r.created_at), "muted"));
 
         const statusCell = document.createElement("td");
         statusCell.append(
-            r.published ? badge("Опубликован", "ok", true) : badge("Скрыт", "banned", true)
+            r.published
+                ? badge("Опубликован", "ok", true)
+                : badge("Скрыт", "banned", true)
         );
+
         tr.append(statusCell);
 
         const actions = document.createElement("td");
         actions.append(actionButton("Скачать", () => downloadRelease(r)));
-        actions.append(
-            actionButton(r.published ? "Скрыть" : "Показать", () => togglePublished(r))
-        );
+        actions.append(actionButton(
+            r.published ? "Скрыть" : "Показать",
+            () => togglePublished(r)
+        ));
         actions.append(actionButton("Удалить", () => deleteRelease(r), true));
-        tr.append(actions);
 
+        tr.append(actions);
         tbody.append(tr);
     });
 }
@@ -416,7 +631,9 @@ async function downloadRelease(r) {
         const { data, error } = await supabase.storage
             .from("releases")
             .createSignedUrl(r.file_path, 120, { download: true });
+
         if (error || !data) return relStatus(uploadErrText(error));
+
         window.location.href = data.signedUrl;
     } else if (r.external_url) {
         window.open(r.external_url, "_blank", "noopener");
@@ -430,20 +647,34 @@ async function togglePublished(r) {
         .eq("id", r.id);
 
     if (error) return relStatus(errText(error));
+
     await loadReleases();
-    relStatus(r.published ? "Релиз скрыт с сайта" : "Релиз снова виден на сайте", true);
+    relStatus(
+        r.published ? "Релиз скрыт с сайта" : "Релиз снова виден на сайте",
+        true
+    );
 }
 
 async function deleteRelease(r) {
     const label = `${PLATFORMS[r.platform] || r.platform} ${r.version}`;
-    if (!window.confirm(`Удалить релиз ${label}? Файл тоже будет удалён, это нельзя отменить.`)) return;
+
+    if (!window.confirm(
+        `Удалить релиз ${label}? Файл тоже будет удалён, это нельзя отменить.`
+    )) return;
 
     if (r.file_path) {
-        const { error: removeError } = await supabase.storage.from("releases").remove([r.file_path]);
+        const { error: removeError } = await supabase.storage
+            .from("releases")
+            .remove([r.file_path]);
+
         if (removeError) return relStatus(uploadErrText(removeError));
     }
 
-    const { error } = await supabase.from("releases").delete().eq("id", r.id);
+    const { error } = await supabase
+        .from("releases")
+        .delete()
+        .eq("id", r.id);
+
     if (error) return relStatus(errText(error));
 
     await loadReleases();
@@ -462,12 +693,17 @@ $("releaseForm").addEventListener("submit", async (e) => {
 
     if (!version) return relStatus("Укажи версию");
     if (!file && !url) return relStatus("Выбери файл или вставь ссылку");
-    if (!file && !/^https:\/\//i.test(url)) return relStatus("Ссылка должна начинаться с https://");
+    if (!file && !/^https:\/\//i.test(url)) {
+        return relStatus("Ссылка должна начинаться с https://");
+    }
 
     if (file) {
         const ext = "." + file.name.split(".").pop().toLowerCase();
+
         if (!EXTENSIONS[platform].includes(ext)) {
-            return relStatus(`Для ${PLATFORMS[platform]} нужен файл ${EXTENSIONS[platform].join(", ")}`);
+            return relStatus(
+                `Для ${PLATFORMS[platform]} нужен файл ${EXTENSIONS[platform].join(", ")}`
+            );
         }
     }
 
@@ -483,6 +719,7 @@ $("releaseForm").addEventListener("submit", async (e) => {
         filePath = `${platform}/${safeVersion}/${safeName}`;
 
         relStatus("Загружаем файл… не закрывай страницу", true);
+
         const { error } = await supabase.storage
             .from("releases")
             .upload(filePath, file, { upsert: false });
@@ -504,8 +741,10 @@ $("releaseForm").addEventListener("submit", async (e) => {
     });
 
     if (insertError) {
-        // не оставляем в хранилище «осиротевший» файл
-        if (filePath) await supabase.storage.from("releases").remove([filePath]);
+        if (filePath) {
+            await supabase.storage.from("releases").remove([filePath]);
+        }
+
         busy = false;
         btn.disabled = false;
         return relStatus(errText(insertError));
@@ -513,14 +752,22 @@ $("releaseForm").addEventListener("submit", async (e) => {
 
     busy = false;
     btn.disabled = false;
+
     $("releaseForm").reset();
     setAccept();
+
     await loadReleases();
     relStatus(`Релиз ${PLATFORMS[platform]} ${version} опубликован`, true);
 });
 
 /* ---------- Объявления ---------- */
-const KINDS = { info: "Обычное", update: "Обновление", warning: "Важное" };
+
+const KINDS = {
+    info: "Обычное",
+    update: "Обновление",
+    warning: "Важное",
+};
+
 let anns = [];
 
 function annMsg(text, ok = false) {
@@ -566,7 +813,10 @@ function renderAnn() {
 
         const note = document.createElement("div");
         note.className = "note";
-        note.textContent = a.body.length > 90 ? a.body.slice(0, 90) + "…" : a.body;
+        note.textContent = (a.body || "").length > 90
+            ? a.body.slice(0, 90) + "…"
+            : (a.body || "");
+
         titleCell.append(note);
         tr.append(titleCell);
 
@@ -574,12 +824,13 @@ function renderAnn() {
         tr.append(td(formatDate(a.created_at), "muted"));
 
         const actions = document.createElement("td");
-        actions.append(
-            actionButton(a.pinned ? "Открепить" : "Закрепить", () => toggleAnnPin(a))
-        );
+        actions.append(actionButton(
+            a.pinned ? "Открепить" : "Закрепить",
+            () => toggleAnnPin(a)
+        ));
         actions.append(actionButton("Удалить", () => deleteAnn(a), true));
-        tr.append(actions);
 
+        tr.append(actions);
         tbody.append(tr);
     });
 }
@@ -592,6 +843,7 @@ async function toggleAnnPin(a) {
         .select();
 
     if (error) return annMsg(errText(error));
+
     if (!data || data.length === 0) {
         return annMsg("Не сохранилось: проверь права (RLS) для announcements");
     }
@@ -601,7 +853,9 @@ async function toggleAnnPin(a) {
 }
 
 async function deleteAnn(a) {
-    if (!window.confirm(`Удалить объявление «${a.title}»? Это нельзя отменить.`)) return;
+    if (!window.confirm(`Удалить объявление «${a.title}»? Это нельзя отменить.`)) {
+        return;
+    }
 
     const { data, error } = await supabase
         .from("announcements")
@@ -610,6 +864,7 @@ async function deleteAnn(a) {
         .select();
 
     if (error) return annMsg(errText(error));
+
     if (!data || data.length === 0) {
         return annMsg("Не удалилось: проверь права (RLS) для announcements");
     }
@@ -624,6 +879,7 @@ $("annForm").addEventListener("submit", async (e) => {
 
     const title = $("annTitle").value.trim();
     const body = $("annBody").value.trim();
+
     if (!title || !body) return annMsg("Заполни заголовок и текст");
 
     const btn = $("annSubmit");
@@ -648,6 +904,7 @@ $("annForm").addEventListener("submit", async (e) => {
 });
 
 /* ---------- Технические работы ---------- */
+
 function maintMsg(text, ok = false) {
     const el = $("mMsg");
     el.textContent = text;
@@ -689,17 +946,19 @@ async function saveMaint(patch, okText) {
 
     if (error) return maintMsg("Ошибка: " + error.message);
 
-    // Supabase не возвращает ошибку, если RLS не дал изменить строку, поэтому проверяем сами
     if (!data || data.length === 0) {
-        return maintMsg("Не сохранилось: нет строки id = 1 в site_settings или нет прав (RLS). Выполни setup.sql");
+        return maintMsg(
+            "Не сохранилось: нет строки id = 1 в site_settings или нет прав (RLS). Выполни setup.sql"
+        );
     }
 
     maintMsg(okText, true);
-    loadMaint();
+    await loadMaint();
 }
 
 $("mStart").addEventListener("click", () => {
     const until = $("mUntil").value;
+
     saveMaint(
         {
             maintenance: true,
@@ -722,4 +981,9 @@ $("mSaveAnn").addEventListener("click", () => {
     );
 });
 
-init();
+/* ---------- Запуск ---------- */
+
+init().catch((error) => {
+    console.error(error);
+    showGate("Ошибка запуска админ-панели: " + (error?.message || error));
+});
