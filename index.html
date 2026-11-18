@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -26,15 +27,9 @@
             --border: #292929;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
             font-family: 'Onest', sans-serif;
@@ -43,21 +38,10 @@
             overflow-x: hidden;
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; }
+        [hidden] { display: none !important; }
 
-        button {
-            font-family: inherit;
-            cursor: pointer;
-        }
-
-        [hidden] {
-            display: none !important;
-        }
-
-        /* ---------- Первичная проверка сайта ---------- */
         .boot-screen {
             position: fixed;
             inset: 0;
@@ -90,11 +74,7 @@
             animation: boot-spin .8s linear infinite;
         }
 
-        .boot-text {
-            color: #999;
-            font-size: 13px;
-        }
-
+        .boot-text { color: #999; font-size: 13px; }
         @keyframes boot-spin { to { transform: rotate(360deg); } }
 
         .navbar {
@@ -111,15 +91,8 @@
             backdrop-filter: blur(15px);
         }
 
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        .logo span {
-            color: var(--orange);
-        }
+        .logo { font-size: 24px; font-weight: 800; letter-spacing: -1px; }
+        .logo span { color: var(--orange); }
 
         .nav-links {
             display: flex;
@@ -129,9 +102,7 @@
             font-size: 14px;
         }
 
-        .nav-links a:hover {
-            color: var(--yellow);
-        }
+        .nav-links a:hover { color: var(--yellow); }
 
         .nav-button {
             background: linear-gradient(135deg, var(--orange), var(--yellow));
@@ -141,15 +112,9 @@
             font-weight: 800;
         }
 
-        .nav-links a.nav-button:hover {
-            color: #111;
-        }
+        .nav-links a.nav-button:hover { color: #111; }
 
-        .nav-auth {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .nav-auth { display: flex; align-items: center; gap: 12px; }
 
         .nav-ghost {
             background: transparent;
@@ -162,14 +127,8 @@
             transition: 0.25s;
         }
 
-        .nav-ghost:hover {
-            border-color: var(--orange);
-            color: var(--yellow);
-        }
-
-        a.nav-ghost {
-            display: inline-block;
-        }
+        .nav-ghost:hover { border-color: var(--orange); color: var(--yellow); }
+        a.nav-ghost { display: inline-block; }
 
         .nav-user-name {
             color: var(--yellow);
@@ -200,11 +159,7 @@
             pointer-events: none;
         }
 
-        .hero-content {
-            max-width: 700px;
-            position: relative;
-            z-index: 2;
-        }
+        .hero-content { max-width: 700px; position: relative; z-index: 2; }
 
         .tag {
             display: inline-block;
@@ -240,11 +195,7 @@
             margin-bottom: 35px;
         }
 
-        .hero-buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
+        .hero-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
 
         .btn {
             padding: 15px 24px;
@@ -278,9 +229,7 @@
             border: 1px solid var(--border);
         }
 
-        .btn-secondary:hover {
-            border-color: var(--orange);
-        }
+        .btn-secondary:hover { border-color: var(--orange); }
 
         .hero-info {
             display: flex;
@@ -289,25 +238,32 @@
             flex-wrap: wrap;
         }
 
-        .hero-info strong {
-            display: block;
-            font-size: 20px;
-            color: var(--yellow);
+        .hero-info strong { display: block; font-size: 20px; color: var(--yellow); }
+        .hero-info span { color: var(--muted); font-size: 12px; }
+
+        .preorder-hero {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
         }
 
-        .hero-info span {
-            color: var(--muted);
-            font-size: 12px;
+        .preorder-hero .btn { font-size: 14px; }
+
+        .preorder-status {
+            color: #c7c7c7;
+            font-size: 13px;
+            line-height: 1.6;
         }
 
-        section {
-            padding: 90px 7%;
-        }
+        .preorder-status.success { color: #7ddc8a; }
+        .preorder-status.warning { color: var(--yellow); }
+        .preorder-status.error { color: #ff7777; }
 
-        .section-title {
-            text-align: center;
-            margin-bottom: 50px;
-        }
+        section { padding: 90px 7%; }
+
+        .section-title { text-align: center; margin-bottom: 50px; }
 
         .section-title h2 {
             font-size: clamp(30px, 4vw, 45px);
@@ -315,30 +271,13 @@
             margin-bottom: 15px;
         }
 
-        .section-title h2 span {
-            color: var(--orange);
-        }
+        .section-title h2 span { color: var(--orange); }
+        .section-title p { color: var(--muted); line-height: 1.7; }
 
-        .section-title p {
-            color: var(--muted);
-            line-height: 1.7;
-        }
+        section.announcements { padding: 10px 7% 70px; }
+        .announcements .section-title { margin-bottom: 30px; }
 
-        /* ---------- Объявления ---------- */
-        section.announcements {
-            padding: 10px 7% 70px;
-        }
-
-        .announcements .section-title {
-            margin-bottom: 30px;
-        }
-
-        .ann-list {
-            display: grid;
-            gap: 14px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
+        .ann-list { display: grid; gap: 14px; max-width: 900px; margin: 0 auto; }
 
         .ann-card {
             padding: 20px 24px;
@@ -347,21 +286,14 @@
             background: var(--surface);
         }
 
-        .ann-card.update {
-            border-color: #49301c;
-        }
+        .ann-card.update { border-color: #49301c; }
 
         .ann-card.warning {
             border-color: var(--orange);
-            background:
-                radial-gradient(circle at top left, #28170c, transparent 70%),
-                var(--surface);
+            background: radial-gradient(circle at top left, #28170c, transparent 70%), var(--surface);
         }
 
-        .ann-card h3 {
-            font-size: 18px;
-            margin-bottom: 8px;
-        }
+        .ann-card h3 { font-size: 18px; margin-bottom: 8px; }
 
         .ann-card p {
             font-size: 14px;
@@ -371,15 +303,9 @@
             word-break: break-word;
         }
 
-        .ann-card .date {
-            margin-top: 12px;
-            font-size: 12px;
-            color: var(--orange);
-        }
+        .ann-card .date { margin-top: 12px; font-size: 12px; color: var(--orange); }
 
-        .features {
-            background: #0d0d0d;
-        }
+        .features { background: #0d0d0d; }
 
         .feature-grid {
             display: grid;
@@ -395,10 +321,7 @@
             transition: 0.3s;
         }
 
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: #6a3515;
-        }
+        .feature-card:hover { transform: translateY(-5px); border-color: #6a3515; }
 
         .feature-icon {
             width: 55px;
@@ -412,10 +335,7 @@
             margin-bottom: 22px;
         }
 
-        .feature-card h3 {
-            font-size: 19px;
-            margin-bottom: 12px;
-        }
+        .feature-card h3 { font-size: 19px; margin-bottom: 12px; }
 
         .feature-card p {
             font-size: 14px;
@@ -423,9 +343,7 @@
             line-height: 1.7;
         }
 
-        .download {
-            text-align: center;
-        }
+        .download { text-align: center; }
 
         .download-box {
             max-width: 800px;
@@ -433,15 +351,10 @@
             padding: 50px 30px;
             border-radius: 25px;
             border: 1px solid #49301c;
-            background:
-                radial-gradient(circle at top, #28170c, transparent 70%),
-                var(--surface);
+            background: radial-gradient(circle at top, #28170c, transparent 70%), var(--surface);
         }
 
-        .download-box h2 {
-            font-size: 38px;
-            margin-bottom: 20px;
-        }
+        .download-box h2 { font-size: 38px; margin-bottom: 20px; }
 
         .download-box p {
             color: var(--muted);
@@ -449,11 +362,7 @@
             line-height: 1.8;
         }
 
-        .download-box .download-hint {
-            margin: 20px 0 0;
-            font-size: 14px;
-            color: var(--yellow);
-        }
+        .download-box .download-hint { margin: 20px 0 0; font-size: 14px; color: var(--yellow); }
 
         .download-buttons {
             display: flex;
@@ -462,12 +371,7 @@
             flex-wrap: wrap;
         }
 
-        .download-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
+        .download-item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 
         .download-item .btn:disabled {
             opacity: 0.45;
@@ -476,17 +380,9 @@
             box-shadow: none;
         }
 
-        .dl-meta {
-            font-size: 12px;
-            color: var(--muted);
-        }
+        .dl-meta { font-size: 12px; color: var(--muted); }
 
-        .release-notes {
-            display: grid;
-            gap: 14px;
-            margin-top: 28px;
-            text-align: left;
-        }
+        .release-notes { display: grid; gap: 14px; margin-top: 28px; text-align: left; }
 
         .release-notes div {
             padding: 14px 16px;
@@ -521,11 +417,7 @@
             margin-bottom: 20px;
         }
 
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
+        .news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 
         .news-card {
             background: var(--surface);
@@ -534,21 +426,10 @@
             border-radius: 18px;
         }
 
-        .news-card .date {
-            color: var(--orange);
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
+        .news-card .date { color: var(--orange); font-size: 12px; margin-bottom: 15px; }
+        .news-card h3 { margin-bottom: 12px; }
 
-        .news-card h3 {
-            margin-bottom: 12px;
-        }
-
-        .news-card p {
-            color: var(--muted);
-            font-size: 14px;
-            line-height: 1.7;
-        }
+        .news-card p { color: var(--muted); font-size: 14px; line-height: 1.7; }
 
         footer {
             padding: 35px 7%;
@@ -562,20 +443,10 @@
             font-size: 13px;
         }
 
-        footer strong {
-            color: var(--orange);
-        }
+        footer strong { color: var(--orange); }
+        .footer-links { display: flex; gap: 20px; }
+        .footer-links a:hover { color: var(--yellow); }
 
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-
-        .footer-links a:hover {
-            color: var(--yellow);
-        }
-
-        /* ---------- Окно входа / регистрации ---------- */
         .modal {
             position: fixed;
             inset: 0;
@@ -597,9 +468,7 @@
             padding: 32px 28px 28px;
             border-radius: 22px;
             border: 1px solid #49301c;
-            background:
-                radial-gradient(circle at top, #28170c, transparent 65%),
-                var(--surface);
+            background: radial-gradient(circle at top, #28170c, transparent 65%), var(--surface);
         }
 
         .modal-close {
@@ -616,9 +485,7 @@
             line-height: 1;
         }
 
-        .modal-close:hover {
-            border-color: var(--orange);
-        }
+        .modal-close:hover { border-color: var(--orange); }
 
         .modal-tabs {
             display: flex;
@@ -646,18 +513,9 @@
             color: #111;
         }
 
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
+        .auth-form { display: flex; flex-direction: column; gap: 14px; }
 
-        .field label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 13px;
-            color: #bdbdbd;
-        }
+        .field label { display: block; margin-bottom: 6px; font-size: 13px; color: #bdbdbd; }
 
         .field input {
             width: 100%;
@@ -677,27 +535,11 @@
             box-shadow: 0 0 0 3px rgba(255, 117, 24, 0.15);
         }
 
-        .field small {
-            display: block;
-            margin-top: 5px;
-            font-size: 12px;
-            color: var(--muted);
-        }
+        .field small { display: block; margin-top: 5px; font-size: 12px; color: var(--muted); }
 
-        .form-msg {
-            min-height: 20px;
-            font-size: 13px;
-            line-height: 1.5;
-            color: #ff6b6b;
-        }
-
-        .form-msg.ok {
-            color: #7ddc8a;
-        }
-
-        .auth-form .btn {
-            width: 100%;
-        }
+        .form-msg { min-height: 20px; font-size: 13px; line-height: 1.5; color: #ff6b6b; }
+        .form-msg.ok { color: #7ddc8a; }
+        .auth-form .btn { width: 100%; }
 
         .link-btn {
             align-self: center;
@@ -708,109 +550,40 @@
             font-size: 13px;
         }
 
-        .link-btn:hover {
-            text-decoration: underline;
-        }
-
-        .form-hint {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #bdbdbd;
-        }
-
-        .form-title {
-            font-size: 20px;
-            margin: 4px 40px 2px 0;
-        }
+        .link-btn:hover { text-decoration: underline; }
+        .form-hint { font-size: 14px; line-height: 1.6; color: #bdbdbd; }
+        .form-title { font-size: 20px; margin: 4px 40px 2px 0; }
 
         @media (max-width: 900px) {
-            .feature-grid,
-            .news-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .hero {
-                min-height: 550px;
-            }
+            .feature-grid, .news-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero { min-height: 550px; }
         }
 
         @media (max-width: 600px) {
-            .navbar {
-                padding: 0 5%;
-                height: 65px;
-            }
-
-            .logo {
-                font-size: 20px;
-            }
-
-            .nav-links {
-                gap: 12px;
-                font-size: 12px;
-            }
-
-            .nav-links .hide-mobile {
-                display: none;
-            }
-
-            .nav-button {
-                padding: 9px 12px;
-            }
-
-            .nav-ghost {
-                padding: 8px 10px;
-                font-size: 12px;
-            }
-
-            .nav-user-name {
-                max-width: 70px;
-            }
-
-            .hero {
-                padding: 75px 5%;
-                min-height: auto;
-            }
-
-            .hero h1 {
-                letter-spacing: -2px;
-            }
-
-            .hero p {
-                font-size: 15px;
-            }
-
-            section {
-                padding: 65px 5%;
-            }
-
-            section.announcements {
-                padding: 10px 5% 50px;
-            }
-
-            .feature-grid,
-            .news-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .feature-card {
-                padding: 25px;
-            }
-
-            .download-box h2 {
-                font-size: 29px;
-            }
-
-            footer {
-                flex-direction: column;
-                text-align: center;
-            }
+            .navbar { padding: 0 5%; height: 65px; }
+            .logo { font-size: 20px; }
+            .nav-links { gap: 12px; font-size: 12px; }
+            .nav-links .hide-mobile { display: none; }
+            .nav-button { padding: 9px 12px; }
+            .nav-ghost { padding: 8px 10px; font-size: 12px; }
+            .nav-user-name { max-width: 70px; }
+            .hero { padding: 75px 5%; min-height: auto; }
+            .hero h1 { letter-spacing: -2px; }
+            .hero p { font-size: 15px; }
+            section { padding: 65px 5%; }
+            section.announcements { padding: 10px 5% 50px; }
+            .feature-grid, .news-grid { grid-template-columns: 1fr; }
+            .feature-card { padding: 25px; }
+            .download-box h2 { font-size: 29px; }
+            footer { flex-direction: column; text-align: center; }
+            .preorder-hero { align-items: stretch; }
+            .preorder-hero .btn { width: 100%; }
         }
     </style>
 </head>
 
 <body>
 
-<!-- Экран не даст главной странице появиться до проверки технических работ -->
 <div class="boot-screen" id="bootScreen" role="status" aria-live="polite">
     <div class="boot-logo">🔥 Blaze<span>Launcher</span></div>
     <div class="boot-spinner" aria-hidden="true"></div>
@@ -838,10 +611,8 @@
 </header>
 
 <main>
-
     <section class="hero">
         <div class="hero-content">
-
             <div class="tag">🔥 Minecraft Java Edition Launcher</div>
 
             <h1>
@@ -865,6 +636,16 @@
                 </a>
             </div>
 
+            <div class="preorder-hero">
+                <button type="button" class="btn btn-primary" id="preorderButton">
+                    🔥 Оформить бесплатный предзаказ
+                </button>
+
+                <p class="preorder-status" id="preorderStatus" role="status" aria-live="polite">
+                    Войди в аккаунт, чтобы оформить бесплатный предзаказ.
+                </p>
+            </div>
+
             <div class="hero-info">
                 <div>
                     <strong>Java Edition</strong>
@@ -881,28 +662,23 @@
                     <span>Мобильный лаунчер</span>
                 </div>
             </div>
-
         </div>
     </section>
 
-    <!-- Объявления: скрыты, пока нет опубликованных (показывает announcements.js) -->
     <section class="announcements" id="announcements" hidden>
         <div class="section-title">
             <h2>📢 <span>Объявления</span></h2>
         </div>
-
         <div class="ann-list" id="annList"></div>
     </section>
 
     <section class="features" id="features">
-
         <div class="section-title">
             <h2>Возможности <span>Blaze</span></h2>
             <p>Всё необходимое для комфортной игры в одном месте.</p>
         </div>
 
         <div class="feature-grid">
-
             <div class="feature-card">
                 <div class="feature-icon">🎮</div>
                 <h3>Minecraft Java</h3>
@@ -938,14 +714,11 @@
                 <h3>Управление</h3>
                 <p>Настраивай сенсорные кнопки под свой стиль игры.</p>
             </div>
-
         </div>
     </section>
 
     <section class="download" id="download">
-
         <div class="download-box">
-
             <div class="status" id="downloadStatus">🚧 В разработке</div>
 
             <h2>Готов разжечь пламя?</h2>
@@ -960,6 +733,7 @@
                     <button type="button" class="btn btn-primary" id="dlAndroid" disabled>🤖 Скачать для Android</button>
                     <span class="dl-meta" id="metaAndroid">Скоро</span>
                 </div>
+
                 <div class="download-item">
                     <button type="button" class="btn btn-primary" id="dlWindows" disabled>🖥️ Скачать для Windows</button>
                     <span class="dl-meta" id="metaWindows">Скоро</span>
@@ -967,21 +741,17 @@
             </div>
 
             <p class="download-hint" id="downloadHint"></p>
-
             <div class="release-notes" id="releaseNotes"></div>
-
         </div>
     </section>
 
     <section id="news">
-
         <div class="section-title">
             <h2>Последние <span>новости</span></h2>
             <p>Следи за развитием BlazeLauncher.</p>
         </div>
 
         <div class="news-grid" id="newsGrid">
-
             <div class="news-card">
                 <div class="date">14.11.2026</div>
                 <h3>🔥 Начало разработки</h3>
@@ -999,16 +769,12 @@
                 <h3>📦 Modrinth</h3>
                 <p>Планируется интеграция каталога модов и удобная установка.</p>
             </div>
-
         </div>
     </section>
-
 </main>
 
 <footer>
-    <div>
-        🔥 <strong>BlazeLauncher</strong> © 2026
-    </div>
+    <div>🔥 <strong>BlazeLauncher</strong> © 2026</div>
 
     <div class="footer-links">
         <a href="#features">Возможности</a>
@@ -1016,15 +782,11 @@
         <a href="#download">Скачать</a>
     </div>
 
-    <div>
-        Неофициальный проект Minecraft
-    </div>
+    <div>Неофициальный проект Minecraft</div>
 </footer>
 
-<!-- Окно входа и регистрации -->
 <div class="modal" id="authModal" hidden>
     <div class="modal-box" role="dialog" aria-modal="true" aria-label="Вход и регистрация">
-
         <button type="button" class="modal-close" id="modalClose" aria-label="Закрыть">✕</button>
 
         <div class="modal-tabs" id="modalTabs" role="tablist">
@@ -1037,10 +799,12 @@
                 <label for="logEmail">Почта</label>
                 <input id="logEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
             </div>
+
             <div class="field">
                 <label for="logPass">Пароль</label>
                 <input id="logPass" type="password" autocomplete="current-password" required>
             </div>
+
             <p class="form-msg" id="loginMsg" role="status"></p>
             <button type="submit" class="btn btn-primary">Войти</button>
             <button type="button" class="link-btn" id="forgotLink">Забыли пароль?</button>
@@ -1053,19 +817,23 @@
                        minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" required>
                 <small>3–16 символов: латиница, цифры и _</small>
             </div>
+
             <div class="field">
                 <label for="regEmail">Почта</label>
                 <input id="regEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
             </div>
+
             <div class="field">
                 <label for="regPass">Пароль</label>
                 <input id="regPass" type="password" autocomplete="new-password" minlength="8" required>
                 <small>Минимум 8 символов</small>
             </div>
+
             <div class="field">
                 <label for="regPass2">Повтори пароль</label>
                 <input id="regPass2" type="password" autocomplete="new-password" minlength="8" required>
             </div>
+
             <p class="form-msg" id="registerMsg" role="status"></p>
             <button type="submit" class="btn btn-primary">Создать аккаунт</button>
         </form>
@@ -1073,10 +841,12 @@
         <form class="auth-form" id="resetForm" hidden>
             <h3 class="form-title">Сброс пароля</h3>
             <p class="form-hint">Введи почту аккаунта. Мы отправим ссылку, по которой можно задать новый пароль.</p>
+
             <div class="field">
                 <label for="resetEmail">Почта</label>
                 <input id="resetEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
             </div>
+
             <p class="form-msg" id="resetMsg" role="status"></p>
             <button type="submit" class="btn btn-primary">Отправить ссылку</button>
             <button type="button" class="link-btn" id="backToLogin">Вернуться ко входу</button>
@@ -1084,19 +854,21 @@
 
         <form class="auth-form" id="newPassForm" hidden>
             <h3 class="form-title">Новый пароль</h3>
+
             <div class="field">
                 <label for="newPass">Новый пароль</label>
                 <input id="newPass" type="password" autocomplete="new-password" minlength="8" required>
                 <small>Минимум 8 символов</small>
             </div>
+
             <div class="field">
                 <label for="newPass2">Повтори пароль</label>
                 <input id="newPass2" type="password" autocomplete="new-password" minlength="8" required>
             </div>
+
             <p class="form-msg" id="newPassMsg" role="status"></p>
             <button type="submit" class="btn btn-primary">Сохранить пароль</button>
         </form>
-
     </div>
 </div>
 
