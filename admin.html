@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -26,11 +27,7 @@
             --border: #292929;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Onest', sans-serif;
@@ -39,22 +36,10 @@
             min-height: 100vh;
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button, input, select, textarea {
-            font-family: inherit;
-        }
-
-        button {
-            cursor: pointer;
-        }
-
-        [hidden] {
-            display: none !important;
-        }
+        a { text-decoration: none; color: inherit; }
+        button, input, select, textarea { font-family: inherit; }
+        button { cursor: pointer; }
+        [hidden] { display: none !important; }
 
         .navbar {
             height: 76px;
@@ -66,24 +51,10 @@
             background: rgba(9, 9, 9, 0.9);
         }
 
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        .logo span {
-            color: var(--orange);
-        }
-
-        .back-link {
-            color: #bdbdbd;
-            font-size: 14px;
-        }
-
-        .back-link:hover {
-            color: var(--yellow);
-        }
+        .logo { font-size: 24px; font-weight: 800; letter-spacing: -1px; }
+        .logo span, h1 span { color: var(--orange); }
+        .back-link { color: #bdbdbd; font-size: 14px; }
+        .back-link:hover { color: var(--yellow); }
 
         .wrap {
             max-width: 1100px;
@@ -91,14 +62,7 @@
             padding: 40px 5% 80px;
         }
 
-        h1 {
-            font-size: clamp(28px, 4vw, 38px);
-            font-weight: 800;
-        }
-
-        h1 span {
-            color: var(--orange);
-        }
+        h1 { font-size: clamp(28px, 4vw, 38px); font-weight: 800; }
 
         .gate {
             max-width: 460px;
@@ -107,16 +71,10 @@
             text-align: center;
             border-radius: 22px;
             border: 1px solid #49301c;
-            background:
-                radial-gradient(circle at top, #28170c, transparent 65%),
-                var(--surface);
+            background: radial-gradient(circle at top, #28170c, transparent 65%), var(--surface);
         }
 
-        .gate p {
-            color: var(--muted);
-            line-height: 1.7;
-            margin-bottom: 22px;
-        }
+        .gate p { color: var(--muted); line-height: 1.7; margin-bottom: 22px; }
 
         .btn {
             display: inline-block;
@@ -129,10 +87,7 @@
             background: linear-gradient(135deg, var(--orange), var(--yellow));
         }
 
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: wait;
-        }
+        .btn:disabled { opacity: 0.6; cursor: wait; }
 
         .btn-ghost {
             color: #fff;
@@ -140,9 +95,7 @@
             border: 1px solid var(--border);
         }
 
-        .btn-ghost:hover {
-            border-color: var(--orange);
-        }
+        .btn-ghost:hover { border-color: var(--orange); }
 
         .stats {
             display: grid;
@@ -164,10 +117,7 @@
             color: var(--yellow);
         }
 
-        .stat span {
-            font-size: 12px;
-            color: var(--muted);
-        }
+        .stat span { font-size: 12px; color: var(--muted); }
 
         .toolbar {
             display: flex;
@@ -176,8 +126,7 @@
             margin-bottom: 14px;
         }
 
-        .toolbar input,
-        .toolbar select {
+        .toolbar input, .toolbar select {
             padding: 12px 14px;
             border-radius: 10px;
             border: 1px solid var(--border);
@@ -187,15 +136,8 @@
             outline: none;
         }
 
-        .toolbar input {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .toolbar input:focus,
-        .toolbar select:focus {
-            border-color: var(--orange);
-        }
+        .toolbar input { flex: 1; min-width: 200px; }
+        .toolbar input:focus, .toolbar select:focus { border-color: var(--orange); }
 
         .status-line {
             min-height: 22px;
@@ -204,9 +146,7 @@
             color: #ff6b6b;
         }
 
-        .status-line.ok {
-            color: #7ddc8a;
-        }
+        .status-line.ok { color: #7ddc8a; }
 
         .table-wrap {
             overflow-x: auto;
@@ -215,11 +155,7 @@
             background: var(--surface);
         }
 
-        table {
-            width: 100%;
-            min-width: 760px;
-            border-collapse: collapse;
-        }
+        table { width: 100%; min-width: 760px; border-collapse: collapse; }
 
         th {
             padding: 14px 16px;
@@ -237,17 +173,9 @@
             border-bottom: 1px solid var(--border);
         }
 
-        tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .name {
-            font-weight: 700;
-        }
-
-        .muted {
-            color: var(--muted);
-        }
+        tbody tr:last-child td { border-bottom: none; }
+        .name { font-weight: 700; }
+        .muted { color: var(--muted); }
 
         .empty {
             text-align: center;
@@ -264,27 +192,10 @@
             font-weight: 700;
         }
 
-        .badge.first {
-            margin-left: 0;
-        }
-
-        .badge.admin {
-            color: var(--yellow);
-            background: #24180d;
-            border: 1px solid #49301c;
-        }
-
-        .badge.banned {
-            color: #ff6b6b;
-            background: #2a1212;
-            border: 1px solid #5a2323;
-        }
-
-        .badge.ok {
-            color: #7ddc8a;
-            background: #112016;
-            border: 1px solid #214a2b;
-        }
+        .badge.first { margin-left: 0; }
+        .badge.admin { color: var(--yellow); background: #24180d; border: 1px solid #49301c; }
+        .badge.banned { color: #ff6b6b; background: #2a1212; border: 1px solid #5a2323; }
+        .badge.ok { color: #7ddc8a; background: #112016; border: 1px solid #214a2b; }
 
         .reason {
             margin-top: 8px;
@@ -307,21 +218,10 @@
             transition: 0.2s;
         }
 
-        .act:hover {
-            border-color: var(--orange);
-        }
+        .act:hover { border-color: var(--orange); }
+        .act.danger:hover { border-color: #ff6b6b; color: #ff6b6b; }
+        .act:disabled { opacity: 0.5; cursor: wait; }
 
-        .act.danger:hover {
-            border-color: #ff6b6b;
-            color: #ff6b6b;
-        }
-
-        .act:disabled {
-            opacity: 0.5;
-            cursor: wait;
-        }
-
-        /* Окно причины бана */
         .modal {
             position: fixed;
             inset: 0;
@@ -340,21 +240,11 @@
             padding: 28px;
             border-radius: 22px;
             border: 1px solid #49301c;
-            background:
-                radial-gradient(circle at top, #28170c, transparent 65%),
-                var(--surface);
+            background: radial-gradient(circle at top, #28170c, transparent 65%), var(--surface);
         }
 
-        .modal-box h3 {
-            font-size: 20px;
-            margin-bottom: 6px;
-        }
-
-        .modal-box p {
-            font-size: 14px;
-            color: var(--muted);
-            margin-bottom: 16px;
-        }
+        .modal-box h3 { font-size: 20px; margin-bottom: 6px; }
+        .modal-box p { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
 
         .modal-box textarea {
             width: 100%;
@@ -374,23 +264,9 @@
             box-shadow: 0 0 0 3px rgba(255, 117, 24, 0.15);
         }
 
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-        }
-
-        .modal-actions .btn {
-            flex: 1;
-            text-align: center;
-        }
-
-        .modal-msg {
-            min-height: 20px;
-            margin-top: 10px;
-            font-size: 13px;
-            color: #ff6b6b;
-        }
+        .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .modal-actions .btn { flex: 1; text-align: center; }
+        .modal-msg { min-height: 20px; margin-top: 10px; font-size: 13px; color: #ff6b6b; }
 
         .tabs {
             display: flex;
@@ -421,10 +297,7 @@
             background: linear-gradient(135deg, var(--orange), var(--yellow));
         }
 
-        .sub {
-            margin: 30px 0 14px;
-            font-size: 20px;
-        }
+        .sub { margin: 30px 0 14px; font-size: 20px; }
 
         .rel-form {
             display: flex;
@@ -449,9 +322,7 @@
             color: #bdbdbd;
         }
 
-        .field input,
-        .field select,
-        .field textarea {
+        .field input, .field select, .field textarea {
             width: 100%;
             padding: 12px 14px;
             border-radius: 10px;
@@ -462,24 +333,9 @@
             outline: none;
         }
 
-        .field input:focus,
-        .field select:focus,
-        .field textarea:focus {
-            border-color: var(--orange);
-        }
-
-        .field textarea {
-            min-height: 90px;
-            resize: vertical;
-        }
-
-        .field small {
-            display: block;
-            margin-top: 5px;
-            font-size: 12px;
-            line-height: 1.5;
-            color: var(--muted);
-        }
+        .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--orange); }
+        .field textarea { min-height: 90px; resize: vertical; }
+        .field small { display: block; margin-top: 5px; font-size: 12px; line-height: 1.5; color: var(--muted); }
 
         .field .check {
             display: flex;
@@ -489,24 +345,10 @@
             cursor: pointer;
         }
 
-        .field .check input {
-            width: auto;
-            accent-color: var(--orange);
-        }
-
-        .rel-form .btn {
-            align-self: flex-start;
-        }
-
-        .btn-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .rel-form .btn-row .btn {
-            align-self: auto;
-        }
+        .field .check input { width: auto; accent-color: var(--orange); }
+        .rel-form .btn { align-self: flex-start; }
+        .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        .rel-form .btn-row .btn { align-self: auto; }
 
         .note {
             margin-top: 6px;
@@ -518,21 +360,10 @@
         }
 
         @media (max-width: 700px) {
-            .rel-form .row {
-                grid-template-columns: 1fr;
-            }
-
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .navbar {
-                height: 65px;
-            }
-
-            .logo {
-                font-size: 20px;
-            }
+            .rel-form .row { grid-template-columns: 1fr; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .navbar { height: 65px; }
+            .logo { font-size: 20px; }
         }
     </style>
 </head>
@@ -546,13 +377,11 @@
 
 <main class="wrap">
 
-    <!-- Доступ закрыт / нужно войти -->
     <div class="gate" id="gate">
         <p id="gateText">Проверяем доступ…</p>
         <a href="index.html" class="btn">На главную</a>
     </div>
 
-    <!-- Панель -->
     <div id="panel" hidden>
         <h1>Админ-<span>панель</span></h1>
 
@@ -561,10 +390,10 @@
             <button type="button" class="tab" id="tabReleases" role="tab">Релизы</button>
             <button type="button" class="tab" id="tabAnn" role="tab">Объявления</button>
             <button type="button" class="tab" id="tabMaint" role="tab">Техработы</button>
+            <button type="button" class="tab" id="tabPreorders" role="tab">Предзаказы</button>
         </div>
 
         <section id="usersSection">
-
             <div class="stats">
                 <div class="stat"><strong id="statTotal">0</strong><span>Всего пользователей</span></div>
                 <div class="stat"><strong id="statActive">0</strong><span>Активных</span></div>
@@ -587,22 +416,13 @@
 
             <div class="table-wrap">
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Ник</th>
-                            <th>Почта</th>
-                            <th>Регистрация</th>
-                            <th>Статус</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Ник</th><th>Почта</th><th>Регистрация</th><th>Статус</th><th>Действия</th></tr></thead>
                     <tbody id="rows"></tbody>
                 </table>
             </div>
         </section>
 
         <section id="releasesSection" hidden>
-
             <h2 class="sub">Новый релиз</h2>
 
             <form class="rel-form" id="releaseForm">
@@ -628,13 +448,13 @@
                 <div class="field">
                     <label for="relFile">Файл лаунчера</label>
                     <input id="relFile" type="file" accept=".apk">
-                    <small>Попадает в приватное хранилище, скачать смогут только вошедшие и не забаненные. Лимит размера задаётся в настройках Supabase (на бесплатном плане 50 МБ).</small>
+                    <small>Попадает в приватное хранилище, скачать смогут только вошедшие и не забаненные. Лимит размера задаётся в настройках Supabase.</small>
                 </div>
 
                 <div class="field">
                     <label for="relUrl">…или ссылка на файл</label>
                     <input id="relUrl" type="url" placeholder="https://github.com/…/releases/download/…">
-                    <small>Для больших файлов. Если выбран файл, ссылка игнорируется. Прямую ссылку может открыть любой, у кого она есть.</small>
+                    <small>Для больших файлов. Если выбран файл, ссылка игнорируется.</small>
                 </div>
 
                 <p class="status-line" id="relStatus" role="status"></p>
@@ -642,27 +462,15 @@
             </form>
 
             <h2 class="sub">Все релизы</h2>
-
             <div class="table-wrap">
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Платформа</th>
-                            <th>Версия</th>
-                            <th>Файл</th>
-                            <th>Дата</th>
-                            <th>Статус</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Платформа</th><th>Версия</th><th>Файл</th><th>Дата</th><th>Статус</th><th>Действия</th></tr></thead>
                     <tbody id="relRows"></tbody>
                 </table>
             </div>
-
         </section>
 
         <section id="annSection" hidden>
-
             <h2 class="sub">Новое объявление</h2>
 
             <form class="rel-form" id="annForm">
@@ -698,25 +506,15 @@
             </form>
 
             <h2 class="sub">Все объявления</h2>
-
             <div class="table-wrap">
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Заголовок</th>
-                            <th>Тип</th>
-                            <th>Дата</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Заголовок</th><th>Тип</th><th>Дата</th><th>Действия</th></tr></thead>
                     <tbody id="annRows"></tbody>
                 </table>
             </div>
-
         </section>
 
         <section id="maintSection" hidden>
-
             <h2 class="sub">Технические работы</h2>
 
             <div class="rel-form">
@@ -748,13 +546,29 @@
                     <button type="button" class="btn btn-ghost" id="mSaveAnn">Сохранить только объявление</button>
                 </div>
             </div>
+        </section>
 
+        <section id="preordersSection" hidden>
+            <h2 class="sub">Предзаказы BlazeLauncher</h2>
+
+            <div class="toolbar">
+                <button type="button" class="btn btn-ghost" id="preordersRefreshBtn">Обновить список</button>
+            </div>
+
+            <p class="status-line" id="preordersMsg" role="status"></p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Ник</th><th>Почта</th><th>Дата</th><th>Статус</th><th>Действия</th></tr>
+                    </thead>
+                    <tbody id="preorderRows"></tbody>
+                </table>
+            </div>
         </section>
     </div>
-
 </main>
 
-<!-- Окно бана -->
 <div class="modal" id="banModal" hidden>
     <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="banTitle">
         <h3 id="banTitle">Забанить пользователя</h3>
